@@ -605,7 +605,7 @@ export const mockVehicleData: VehicleData[] = [
 ];
 
 export const getUniqueLines = (): string[] => {
-  return [...new Set(mockVehicleData.map(vehicle => vehicle.linha))].sort();
+  return [...new Set(mockVehicleData.map(vehicle => vehicle.linha).filter(linha => linha.trim() !== ""))].sort();
 };
 
 export const getUniqueCompanies = (): number[] => {
