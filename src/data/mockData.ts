@@ -38,6 +38,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "120",
+    "panico": true,
     "velocidadeMedia": "19.36318407960199"
   },
   {
@@ -51,6 +52,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "73",
+      "panico": true,
     "velocidadeMedia": "18.036082474226806"
   },
   {
@@ -64,6 +66,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
+    "panico": true,
     "velocidadeMedia": "17.78421052631579"
   },
   {
@@ -77,6 +80,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
+    "panico": true,
     "velocidadeMedia": "16.106382978723403"
   },
   {
@@ -90,6 +94,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "73",
+    "panico": true,
     "velocidadeMedia": "15.658767772511847"
   },
   {
@@ -103,6 +108,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
+    "panico": true,
     "velocidadeMedia": "8.07865168539326"
   },
   {
@@ -116,6 +122,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
+    "panico": true,
     "velocidadeMedia": "17.605"
   },
   {
@@ -129,6 +136,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "0",
     "linha": "841",
+    "panico": true,
     "velocidadeMedia": "8.866310160427808"
   },
   {
@@ -157,6 +165,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "João Silva",
     "linha": "125",
+    "panico": true,
     "velocidadeMedia": "22.5"
   },
   {
@@ -197,6 +206,7 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
+    "panico": true,
     "velocidadeMedia": "11.984126984126984"
   },
   {
