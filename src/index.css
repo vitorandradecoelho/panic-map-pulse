@@ -8,35 +8,56 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dashboard dark theme */
+    --background: 220 27% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 27% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 27% 12%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 346 87% 58%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 27% 16%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 27% 14%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 220 27% 18%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 27% 20%;
+    --input: 220 27% 16%;
+    --ring: 346 87% 58%;
 
-    --radius: 0.5rem;
+    /* Dashboard specific colors */
+    --danger: 0 84% 60%;
+    --danger-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 27% 8%;
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    --info: 217 91% 60%;
+    --info-foreground: 210 40% 98%;
+
+    /* Heat map gradients */
+    --heat-low: 142 76% 36%;
+    --heat-medium: 38 92% 50%;
+    --heat-high: 0 84% 60%;
+    --heat-critical: 346 87% 58%;
+
+    /* Glass effects */
+    --glass-bg: 220 27% 12% / 0.8;
+    --glass-border: 220 27% 30% / 0.3;
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
