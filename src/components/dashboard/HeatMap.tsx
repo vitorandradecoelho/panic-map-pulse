@@ -123,14 +123,12 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       alertMap.set(key, existing);
     });
 
-    // Create heat circles for panic alerts with zoom-appropriate sizing
+    // Create heat circles for panic alerts with fixed 100m radius
     alertMap.forEach(({ count, lat, lng, alerts }) => {
       const intensity = Math.min(count / 2, 1); // More sensitive for alerts
       
-      // Calculate radius based on alert density and zoom level
-      const baseRadius = Math.max(200, count * 150);
-      const zoomFactor = Math.pow(2, currentZoom - 12); // Scale with zoom
-      const radius = Math.max(100, baseRadius / zoomFactor);
+      // Fixed radius of 100 meters
+      const radius = 100;
       
       // Use red tones for panic alerts, more intense with higher count
       const color = getPanicAlertColor(count);
