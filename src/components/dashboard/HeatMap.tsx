@@ -23,6 +23,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   const map = useRef<L.Map | null>(null);
   const heatmapGroup = useRef<L.LayerGroup | null>(null);
   const markersGroup = useRef<L.LayerGroup | null>(null);
+  const circleRadiusMap = useRef<Map<L.Circle, number>>(new Map());
 
   // Filter vehicles to only show panic alerts
   const panicVehicles = vehicles.filter(vehicle => vehicle.panico === true);
@@ -51,14 +52,33 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     addHeatMapLayer();
     addAlertMarkers();
 
+    // Add zoom and resize event handlers
+    map.current.on('zoomend', () => {
+      // Invalidate size to ensure proper rendering after zoom
+      map.current?.invalidateSize();
+      // Optionally, update layers based on zoom level
+      updateLayersForZoom();
+    });
+
+    map.current.on('resize', () => {
+      // Ensure map resizes properly
+      map.current?.invalidateSize();
+    });
+
+    // Handle viewport changes
+    map.current.on('viewreset', () => {
+      map.current?.invalidateSize();
+    });
+
     toast.success("Mapa carregado com sucesso!");
   };
 
   const addHeatMapLayer = () => {
     if (!map.current || !heatmapGroup.current) return;
 
-    // Clear existing heatmap
+    // Clear existing heatmap and radius map
     heatmapGroup.current.clearLayers();
+    circleRadiusMap.current.clear();
 
     // Create density grid for panic alerts
     const gridSize = 0.01; // Aproximadamente 1km
@@ -95,6 +115,9 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         weight: 3,
         opacity: 0.8
       });
+
+      // Store original radius for zoom adjustments
+      circleRadiusMap.current.set(heatCircle, radius);
 
       // Add popup with alert info
       heatCircle.bindPopup(`
@@ -181,6 +204,25 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     if (alertCount >= 3) return 'Crítica';
     if (alertCount >= 2) return 'Alta';
     return 'Moderada';
+  };
+
+  const updateLayersForZoom = () => {
+    if (!map.current) return;
+    
+    const zoom = map.current.getZoom();
+    
+    // Adjust circle sizes based on zoom level for better visibility
+    if (heatmapGroup.current) {
+      heatmapGroup.current.eachLayer((layer: any) => {
+        if (layer instanceof L.Circle) {
+          // Get original radius from our map
+          const baseRadius = circleRadiusMap.current.get(layer) || layer.getRadius();
+          const zoomFactor = Math.pow(2, 12 - zoom); // Scale inversely with zoom
+          const newRadius = Math.max(100, baseRadius * zoomFactor);
+          layer.setRadius(newRadius);
+        }
+      });
+    }
   };
 
   useEffect(() => {
