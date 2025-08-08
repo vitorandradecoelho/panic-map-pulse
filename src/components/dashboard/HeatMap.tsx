@@ -21,7 +21,7 @@ interface HeatMapProps {
 export const HeatMap = ({ alerts, className }: HeatMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
-  const heatmapLayer = useRef<any>(null);
+  const heatmapGroup = useRef<L.LayerGroup | null>(null);
   const markersGroup = useRef<L.LayerGroup | null>(null);
 
   const initializeMap = () => {
@@ -40,57 +40,71 @@ export const HeatMap = ({ alerts, className }: HeatMapProps) => {
       maxZoom: 18,
     }).addTo(map.current);
 
-    // Initialize markers group
+    // Initialize layer groups
+    heatmapGroup.current = L.layerGroup().addTo(map.current);
     markersGroup.current = L.layerGroup().addTo(map.current);
 
-    // Load heatmap plugin dynamically
-    loadHeatmapPlugin().then(() => {
-      addHeatMapLayer();
-      addAlertMarkers();
-    });
+    // Add layers
+    addHeatMapLayer();
+    addAlertMarkers();
 
     toast.success("Mapa carregado com sucesso!");
   };
 
-  const loadHeatmapPlugin = async () => {
-    // Load the heatmap plugin script
-    return new Promise<void>((resolve) => {
-      if ((window as any).L?.heatLayer) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js';
-      script.onload = () => resolve();
-      document.head.appendChild(script);
-    });
-  };
-
   const addHeatMapLayer = () => {
-    if (!map.current || !(window as any).L?.heatLayer) return;
+    if (!map.current || !heatmapGroup.current) return;
 
-    // Prepare heatmap data
-    const heatmapData = alerts.map(alert => [
-      alert.latitude,
-      alert.longitude,
-      getSeverityWeight(alert.severity)
-    ]);
+    // Clear existing heatmap
+    heatmapGroup.current.clearLayers();
 
-    // Create heatmap layer
-    heatmapLayer.current = (window as any).L.heatLayer(heatmapData, {
-      radius: 25,
-      blur: 15,
-      maxZoom: 17,
-      gradient: {
-        0.0: '#3B82F6', // Blue (low)
-        0.2: '#10B981', // Green 
-        0.4: '#F59E0B', // Yellow (medium)
-        0.6: '#F97316', // Orange
-        0.8: '#EF4444', // Red (high)
-        1.0: '#DC2626'  // Dark red (critical)
-      }
-    }).addTo(map.current);
+    // Create density grid
+    const gridSize = 0.01; // Aproximadamente 1km
+    const densityMap = new Map<string, { count: number, severitySum: number, lat: number, lng: number }>();
+
+    // Group alerts by grid cells
+    alerts.forEach(alert => {
+      const gridLat = Math.floor(alert.latitude / gridSize) * gridSize;
+      const gridLng = Math.floor(alert.longitude / gridSize) * gridSize;
+      const key = `${gridLat},${gridLng}`;
+      
+      const existing = densityMap.get(key) || { count: 0, severitySum: 0, lat: gridLat, lng: gridLng };
+      existing.count += 1;
+      existing.severitySum += getSeverityWeight(alert.severity);
+      densityMap.set(key, existing);
+    });
+
+    // Create heat circles
+    densityMap.forEach(({ count, severitySum, lat, lng }) => {
+      const avgSeverity = severitySum / count;
+      const intensity = Math.min(count / 3, 1); // Normalize intensity
+      
+      // Calculate radius based on density
+      const radius = Math.max(200, count * 150);
+      
+      // Calculate color based on average severity
+      const color = getHeatColor(avgSeverity);
+      
+      const heatCircle = L.circle([lat + gridSize/2, lng + gridSize/2], {
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.3 + (intensity * 0.4), // More opacity for higher density
+        radius: radius,
+        weight: 2,
+        opacity: 0.6
+      });
+
+      // Add popup with density info
+      heatCircle.bindPopup(`
+        <div style="font-family: system-ui; padding: 8px;">
+          <strong>Densidade de Alertas</strong><br>
+          <strong>Alertas:</strong> ${count}<br>
+          <strong>Severidade Média:</strong> ${getSeverityLabel(avgSeverity)}<br>
+          <strong>Intensidade:</strong> ${Math.round(intensity * 100)}%
+        </div>
+      `);
+
+      heatmapGroup.current?.addLayer(heatCircle);
+    });
   };
 
   const addAlertMarkers = () => {
@@ -108,33 +122,35 @@ export const HeatMap = ({ alerts, className }: HeatMapProps) => {
         html: `
           <div style="
             background-color: ${color};
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            z-index: 1000;
           "></div>
         `,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
       });
 
       const marker = L.marker([alert.latitude, alert.longitude], {
-        icon: customIcon
+        icon: customIcon,
+        zIndexOffset: 1000 // Ensure markers appear above heatmap
       });
 
       // Create popup content
       const popupContent = `
         <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
-          <div style="font-weight: bold; color: ${color}; margin-bottom: 8px;">
-            Alerta ${alert.severity.toUpperCase()}
+          <div style="font-weight: bold; color: ${color}; margin-bottom: 8px; font-size: 14px;">
+            🚨 Alerta ${alert.severity.toUpperCase()}
           </div>
-          <div style="font-size: 14px; line-height: 1.4;">
+          <div style="font-size: 13px; line-height: 1.4;">
             <strong>Veículo:</strong> ${alert.vehicleId}<br>
             <strong>Endereço:</strong> ${alert.address}<br>
             <strong>Bairro:</strong> ${alert.neighborhood}<br>
             <strong>Horário:</strong> ${new Date(alert.timestamp).toLocaleString('pt-BR')}<br>
-            <strong>Status:</strong> ${alert.resolved ? 'Resolvido' : 'Pendente'}
+            <strong>Status:</strong> <span style="color: ${alert.resolved ? '#10B981' : '#EF4444'}">${alert.resolved ? '✅ Resolvido' : '⏳ Pendente'}</span>
             ${alert.responseTime ? `<br><strong>Tempo resposta:</strong> ${alert.responseTime}min` : ''}
           </div>
         </div>
@@ -147,11 +163,11 @@ export const HeatMap = ({ alerts, className }: HeatMapProps) => {
 
   const getSeverityWeight = (severity: string): number => {
     switch (severity) {
-      case 'critical': return 1.0;
-      case 'high': return 0.8;
-      case 'medium': return 0.5;
-      case 'low': return 0.3;
-      default: return 0.3;
+      case 'critical': return 4;
+      case 'high': return 3;
+      case 'medium': return 2;
+      case 'low': return 1;
+      default: return 1;
     }
   };
 
@@ -163,6 +179,20 @@ export const HeatMap = ({ alerts, className }: HeatMapProps) => {
       case 'low': return '#10B981';
       default: return '#6B7280';
     }
+  };
+
+  const getHeatColor = (avgSeverity: number): string => {
+    if (avgSeverity >= 3.5) return '#DC2626'; // Critical
+    if (avgSeverity >= 2.5) return '#EF4444'; // High
+    if (avgSeverity >= 1.5) return '#F97316'; // Medium
+    return '#10B981'; // Low
+  };
+
+  const getSeverityLabel = (avgSeverity: number): string => {
+    if (avgSeverity >= 3.5) return 'Crítica';
+    if (avgSeverity >= 2.5) return 'Alta';
+    if (avgSeverity >= 1.5) return 'Média';
+    return 'Baixa';
   };
 
   useEffect(() => {
@@ -177,23 +207,41 @@ export const HeatMap = ({ alerts, className }: HeatMapProps) => {
   }, []);
 
   useEffect(() => {
-    if (map.current && heatmapLayer.current && markersGroup.current) {
-      // Update heatmap data
-      const heatmapData = alerts.map(alert => [
-        alert.latitude,
-        alert.longitude,
-        getSeverityWeight(alert.severity)
-      ]);
-      
-      heatmapLayer.current.setLatLngs(heatmapData);
-      
-      // Update markers
+    if (map.current && heatmapGroup.current && markersGroup.current) {
+      // Update both layers when alerts change
+      addHeatMapLayer();
       addAlertMarkers();
     }
   }, [alerts]);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
+      <div className="mb-4 p-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Mapa de Calor - Densidade de Alertas</h3>
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-[#10B981] opacity-70"></div>
+              <span>Baixa</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-[#F97316] opacity-70"></div>
+              <span>Média</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-[#EF4444] opacity-70"></div>
+              <span>Alta</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-[#DC2626] opacity-70"></div>
+              <span>Crítica</span>
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          Círculos maiores = maior densidade • Cores mais intensas = maior severidade
+        </p>
+      </div>
       <div ref={mapContainer} className="w-full h-[600px]" />
     </Card>
   );
