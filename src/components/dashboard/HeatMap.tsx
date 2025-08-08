@@ -24,9 +24,22 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   const heatmapGroup = useRef<L.LayerGroup | null>(null);
   const markersGroup = useRef<L.LayerGroup | null>(null);
   const circleRadiusMap = useRef<Map<L.Circle, number>>(new Map());
+  const currentZoomLevel = useRef<number>(12);
 
   // Filter vehicles to only show panic alerts
   const panicVehicles = vehicles.filter(vehicle => vehicle.panico === true);
+
+  // Calculate dynamic grid size based on zoom level
+  const getGridSizeForZoom = (zoom: number): number => {
+    // More zoom = smaller grid (more detailed clustering)
+    // Less zoom = larger grid (more grouped clustering)
+    if (zoom >= 16) return 0.002; // Very detailed - ~200m
+    if (zoom >= 14) return 0.005; // Detailed - ~500m  
+    if (zoom >= 12) return 0.01;  // Medium - ~1km
+    if (zoom >= 10) return 0.02;  // Grouped - ~2km
+    if (zoom >= 8) return 0.05;   // Large groups - ~5km
+    return 0.1; // Very large groups - ~10km
+  };
 
   const initializeMap = () => {
     if (!mapContainer.current) return;
@@ -54,9 +67,19 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
 
     // Add zoom and resize event handlers
     map.current.on('zoomend', () => {
-      // Invalidate size to ensure proper rendering after zoom
+      const newZoom = map.current?.getZoom() || 12;
+      
+      // Only recalculate clusters if zoom level changed significantly
+      if (Math.abs(newZoom - currentZoomLevel.current) >= 1) {
+        currentZoomLevel.current = newZoom;
+        
+        // Recalculate clustering with new grid size
+        addHeatMapLayer();
+        addAlertMarkers();
+      }
+      
+      // Always invalidate size and update layer visibility
       map.current?.invalidateSize();
-      // Optionally, update layers based on zoom level
       updateLayersForZoom();
     });
 
@@ -80,8 +103,11 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     heatmapGroup.current.clearLayers();
     circleRadiusMap.current.clear();
 
-    // Create density grid for panic alerts
-    const gridSize = 0.01; // Aproximadamente 1km
+    // Get current zoom level for dynamic clustering
+    const currentZoom = map.current.getZoom();
+    const gridSize = getGridSizeForZoom(currentZoom);
+    
+    // Create density grid for panic alerts with dynamic grid size
     const alertMap = new Map<string, { count: number, lat: number, lng: number, alerts: VehicleData[] }>();
 
     // Group panic alerts by grid cells
@@ -97,12 +123,14 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       alertMap.set(key, existing);
     });
 
-    // Create heat circles for panic alerts
+    // Create heat circles for panic alerts with zoom-appropriate sizing
     alertMap.forEach(({ count, lat, lng, alerts }) => {
       const intensity = Math.min(count / 2, 1); // More sensitive for alerts
       
-      // Calculate radius based on alert density
-      const radius = Math.max(300, count * 200);
+      // Calculate radius based on alert density and zoom level
+      const baseRadius = Math.max(200, count * 150);
+      const zoomFactor = Math.pow(2, currentZoom - 12); // Scale with zoom
+      const radius = Math.max(100, baseRadius / zoomFactor);
       
       // Use red tones for panic alerts, more intense with higher count
       const color = getPanicAlertColor(count);
@@ -139,26 +167,35 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     // Clear existing markers
     markersGroup.current.clearLayers();
 
+    // Only show individual markers at high zoom levels to avoid clutter
+    const currentZoom = map.current.getZoom();
+    if (currentZoom < 14) {
+      return; // Don't show individual markers when zoomed out
+    }
+
     panicVehicles.forEach(vehicle => {
       const [lng, lat] = vehicle.gps.coordinates;
       const color = '#DC2626'; // Red for panic alerts
       
-      // Create custom colored marker
+      // Scale marker size based on zoom
+      const markerSize = Math.min(20, Math.max(12, currentZoom - 10));
+      
+      // Create custom colored marker with zoom-appropriate size
       const customIcon = L.divIcon({
         className: 'custom-marker',
         html: `
           <div style="
             background-color: ${color};
-            width: 16px;
-            height: 16px;
+            width: ${markerSize}px;
+            height: ${markerSize}px;
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 2px 6px rgba(0,0,0,0.4);
             z-index: 1000;
           "></div>
         `,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize/2, markerSize/2]
       });
 
       const marker = L.marker([lat, lng], {
@@ -211,15 +248,31 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     
     const zoom = map.current.getZoom();
     
-    // Adjust circle sizes based on zoom level for better visibility
+    // Show/hide different elements based on zoom level
     if (heatmapGroup.current) {
+      // Adjust circle opacity and visibility based on zoom
       heatmapGroup.current.eachLayer((layer: any) => {
         if (layer instanceof L.Circle) {
-          // Get original radius from our map
-          const baseRadius = circleRadiusMap.current.get(layer) || layer.getRadius();
-          const zoomFactor = Math.pow(2, 12 - zoom); // Scale inversely with zoom
-          const newRadius = Math.max(100, baseRadius * zoomFactor);
-          layer.setRadius(newRadius);
+          // Make circles more transparent when zoomed in (so markers are more visible)
+          const opacity = zoom >= 15 ? 0.3 : zoom >= 13 ? 0.5 : 0.7;
+          const fillOpacity = zoom >= 15 ? 0.2 : zoom >= 13 ? 0.3 : 0.4;
+          
+          layer.setStyle({
+            opacity: opacity,
+            fillOpacity: fillOpacity
+          });
+        }
+      });
+    }
+
+    // Update marker visibility based on zoom (handled in addAlertMarkers)
+    if (markersGroup.current) {
+      const showMarkers = zoom >= 14;
+      markersGroup.current.eachLayer((layer: any) => {
+        if (showMarkers) {
+          layer.setOpacity(1);
+        } else {
+          layer.setOpacity(0);
         }
       });
     }
@@ -248,7 +301,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
       <div className="mb-4 p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico</h3>
+          <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico (Clustering Dinâmico)</h3>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full bg-[#DC2626] opacity-70"></div>
@@ -265,7 +318,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           </div>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          Círculos maiores = mais alertas na região • Cores indicam severidade baseada na concentração de alertas
+          🔍 Zoom IN: Divide áreas em clusters menores e mais detalhados • Zoom OUT: Agrupa em áreas maiores • Marcadores individuais aparecem apenas com zoom alto
         </p>
       </div>
       <div ref={mapContainer} className="w-full h-[600px]" />
