@@ -10,6 +10,7 @@ export interface VehicleData {
   motorista: string;
   linha: string;
   velocidadeMedia?: string;
+  panico?: boolean; // Flag para alertas de assalto
 }
 
 export const mockVehicleData: VehicleData[] = [
@@ -23,7 +24,8 @@ export const mockVehicleData: VehicleData[] = [
       "coordinates": [-38.485416666666666, -3.7383944444444444]
     },
     "motorista": "0",
-    "linha": "810"
+    "linha": "810",
+    "panico": true
   },
   {
     "_id": "6895f484d065117d9e2a3ea5",
@@ -62,7 +64,8 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "810",
-    "velocidadeMedia": "17.78421052631579"
+    "velocidadeMedia": "17.78421052631579",
+    "panico": true
   },
   {
     "_id": "6895d889d065117d9e2a333d",
@@ -140,7 +143,8 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "",
     "linha": "393",
-    "velocidadeMedia": "13.98913043478261"
+    "velocidadeMedia": "13.98913043478261",
+    "panico": true
   },
   // Additional mock data to provide more variety
   {
@@ -167,7 +171,8 @@ export const mockVehicleData: VehicleData[] = [
     },
     "motorista": "Maria Santos",
     "linha": "74",
-    "velocidadeMedia": "18.8"
+    "velocidadeMedia": "18.8",
+    "panico": true
   }
 ];
 
