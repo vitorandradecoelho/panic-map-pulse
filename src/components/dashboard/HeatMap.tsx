@@ -1,12 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { PanicAlert } from "@/data/mockData";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 interface HeatMapProps {
   alerts: PanicAlert[];
@@ -15,225 +20,177 @@ interface HeatMapProps {
 
 export const HeatMap = ({ alerts, className }: HeatMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string>("");
-  const [tokenSet, setTokenSet] = useState(false);
+  const map = useRef<L.Map | null>(null);
+  const heatmapLayer = useRef<any>(null);
+  const markersGroup = useRef<L.LayerGroup | null>(null);
 
   const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
-    
-    try {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [-46.6333, -23.5505], // São Paulo center
-        zoom: 12,
-        pitch: 45,
-      });
+    // Initialize map with OpenStreetMap
+    map.current = L.map(mapContainer.current, {
+      center: [-23.5505, -46.6333], // São Paulo center
+      zoom: 12,
+      zoomControl: true,
+    });
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map.current);
 
-      map.current.on('load', () => {
-        addHeatMapLayer();
-        addAlertMarkers();
-      });
+    // Initialize markers group
+    markersGroup.current = L.layerGroup().addTo(map.current);
 
-      toast.success("Mapa carregado com sucesso!");
-    } catch (error) {
-      toast.error("Erro ao carregar o mapa. Verifique o token do Mapbox.");
-    }
+    // Load heatmap plugin dynamically
+    loadHeatmapPlugin().then(() => {
+      addHeatMapLayer();
+      addAlertMarkers();
+    });
+
+    toast.success("Mapa carregado com sucesso!");
+  };
+
+  const loadHeatmapPlugin = async () => {
+    // Load the heatmap plugin script
+    return new Promise<void>((resolve) => {
+      if ((window as any).L?.heatLayer) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
   };
 
   const addHeatMapLayer = () => {
-    if (!map.current) return;
+    if (!map.current || !(window as any).L?.heatLayer) return;
 
-    const heatmapData = {
-      type: 'FeatureCollection' as const,
-      features: alerts.map(alert => ({
-        type: 'Feature' as const,
-        properties: {
-          severity: alert.severity,
-          weight: getSeverityWeight(alert.severity)
-        },
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [alert.longitude, alert.latitude]
-        }
-      }))
-    };
+    // Prepare heatmap data
+    const heatmapData = alerts.map(alert => [
+      alert.latitude,
+      alert.longitude,
+      getSeverityWeight(alert.severity)
+    ]);
 
-    map.current.addSource('panic-alerts', {
-      type: 'geojson',
-      data: heatmapData
-    });
-
-    map.current.addLayer({
-      id: 'panic-heatmap',
-      type: 'heatmap',
-      source: 'panic-alerts',
-      maxzoom: 15,
-      paint: {
-        'heatmap-weight': [
-          'interpolate',
-          ['linear'],
-          ['get', 'weight'],
-          0, 0,
-          6, 1
-        ],
-        'heatmap-intensity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          0, 1,
-          15, 3
-        ],
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          0, 'rgba(0, 0, 255, 0)',
-          0.2, 'rgb(65, 105, 225)',
-          0.4, 'rgb(0, 255, 255)',
-          0.6, 'rgb(255, 255, 0)',
-          0.8, 'rgb(255, 165, 0)',
-          1, 'rgb(255, 0, 0)'
-        ],
-        'heatmap-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          0, 2,
-          15, 20
-        ],
-        'heatmap-opacity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          7, 1,
-          15, 0
-        ]
+    // Create heatmap layer
+    heatmapLayer.current = (window as any).L.heatLayer(heatmapData, {
+      radius: 25,
+      blur: 15,
+      maxZoom: 17,
+      gradient: {
+        0.0: '#3B82F6', // Blue (low)
+        0.2: '#10B981', // Green 
+        0.4: '#F59E0B', // Yellow (medium)
+        0.6: '#F97316', // Orange
+        0.8: '#EF4444', // Red (high)
+        1.0: '#DC2626'  // Dark red (critical)
       }
-    });
+    }).addTo(map.current);
   };
 
   const addAlertMarkers = () => {
-    if (!map.current) return;
+    if (!map.current || !markersGroup.current) return;
+
+    // Clear existing markers
+    markersGroup.current.clearLayers();
 
     alerts.forEach(alert => {
       const color = getSeverityColor(alert.severity);
       
-      const marker = new mapboxgl.Marker({
-        color: color,
-        scale: 0.8
-      })
-        .setLngLat([alert.longitude, alert.latitude])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div class="p-2 text-sm">
-              <div class="font-bold text-${alert.severity === 'critical' ? 'red' : alert.severity === 'high' ? 'orange' : alert.severity === 'medium' ? 'yellow' : 'green'}-500">
-                Alerta ${alert.severity.toUpperCase()}
-              </div>
-              <div class="mt-1">
-                <strong>Veículo:</strong> ${alert.vehicleId}<br>
-                <strong>Endereço:</strong> ${alert.address}<br>
-                <strong>Bairro:</strong> ${alert.neighborhood}<br>
-                <strong>Horário:</strong> ${new Date(alert.timestamp).toLocaleString('pt-BR')}<br>
-                <strong>Status:</strong> ${alert.resolved ? 'Resolvido' : 'Pendente'}
-                ${alert.responseTime ? `<br><strong>Tempo resposta:</strong> ${alert.responseTime}min` : ''}
-              </div>
-            </div>
-          `)
-        )
-        .addTo(map.current!);
+      // Create custom colored marker
+      const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div style="
+            background-color: ${color};
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          "></div>
+        `,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      const marker = L.marker([alert.latitude, alert.longitude], {
+        icon: customIcon
+      });
+
+      // Create popup content
+      const popupContent = `
+        <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
+          <div style="font-weight: bold; color: ${color}; margin-bottom: 8px;">
+            Alerta ${alert.severity.toUpperCase()}
+          </div>
+          <div style="font-size: 14px; line-height: 1.4;">
+            <strong>Veículo:</strong> ${alert.vehicleId}<br>
+            <strong>Endereço:</strong> ${alert.address}<br>
+            <strong>Bairro:</strong> ${alert.neighborhood}<br>
+            <strong>Horário:</strong> ${new Date(alert.timestamp).toLocaleString('pt-BR')}<br>
+            <strong>Status:</strong> ${alert.resolved ? 'Resolvido' : 'Pendente'}
+            ${alert.responseTime ? `<br><strong>Tempo resposta:</strong> ${alert.responseTime}min` : ''}
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      markersGroup.current?.addLayer(marker);
     });
   };
 
   const getSeverityWeight = (severity: string): number => {
     switch (severity) {
-      case 'critical': return 6;
-      case 'high': return 4;
-      case 'medium': return 2;
-      case 'low': return 1;
-      default: return 1;
+      case 'critical': return 1.0;
+      case 'high': return 0.8;
+      case 'medium': return 0.5;
+      case 'low': return 0.3;
+      default: return 0.3;
     }
   };
 
   const getSeverityColor = (severity: string): string => {
     switch (severity) {
-      case 'critical': return '#ff0000';
-      case 'high': return '#ff6b35';
-      case 'medium': return '#f7931e';
-      case 'low': return '#00ff00';
-      default: return '#6b7280';
-    }
-  };
-
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      setTokenSet(true);
-      initializeMap();
-    } else {
-      toast.error("Por favor, insira um token válido do Mapbox");
+      case 'critical': return '#DC2626';
+      case 'high': return '#EF4444';
+      case 'medium': return '#F97316';
+      case 'low': return '#10B981';
+      default: return '#6B7280';
     }
   };
 
   useEffect(() => {
-    if (tokenSet && map.current) {
-      // Update map when alerts change
-      if (map.current.getSource('panic-alerts')) {
-        map.current.removeLayer('panic-heatmap');
-        map.current.removeSource('panic-alerts');
-      }
-      
-      // Clear existing markers
-      document.querySelectorAll('.mapboxgl-marker').forEach(marker => marker.remove());
-      
-      // Re-add layers and markers
-      addHeatMapLayer();
-      addAlertMarkers();
-    }
-  }, [alerts, tokenSet]);
+    initializeMap();
 
-  useEffect(() => {
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
-  if (!tokenSet) {
-    return (
-      <Card className="p-6 backdrop-blur-sm bg-card/80 border h-[600px] flex flex-col items-center justify-center space-y-4">
-        <AlertTriangle className="h-12 w-12 text-warning" />
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold">Token Mapbox Necessário</h3>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Para visualizar o mapa de calor, insira seu token público do Mapbox. 
-            Você pode obtê-lo em{" "}
-            <a 
-              href="https://mapbox.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
-          </p>
-        </div>
-        <div className="flex space-x-2 w-full max-w-md">
-          <Input
-            type="password"
-            placeholder="Cole seu token público do Mapbox"
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleTokenSubmit()}
-          />
-          <Button onClick={handleTokenSubmit}>Conectar</Button>
-        </div>
-      </Card>
-    );
-  }
+  useEffect(() => {
+    if (map.current && heatmapLayer.current && markersGroup.current) {
+      // Update heatmap data
+      const heatmapData = alerts.map(alert => [
+        alert.latitude,
+        alert.longitude,
+        getSeverityWeight(alert.severity)
+      ]);
+      
+      heatmapLayer.current.setLatLngs(heatmapData);
+      
+      // Update markers
+      addAlertMarkers();
+    }
+  }, [alerts]);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
