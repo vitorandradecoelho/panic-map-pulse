@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { VehicleData } from "@/data/mockData";
@@ -25,9 +25,14 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   const markersGroup = useRef<L.LayerGroup | null>(null);
   const circleRadiusMap = useRef<Map<L.Circle, number>>(new Map());
   const currentZoomLevel = useRef<number>(12);
+  
+  // Estado para gerenciar eventos tratados
+  const [treatedEvents, setTreatedEvents] = useState<Set<string>>(new Set());
 
-  // Filter vehicles to only show panic alerts
-  const panicVehicles = vehicles.filter(vehicle => vehicle.panico === true);
+  // Filter vehicles to only show panic alerts that haven't been treated
+  const panicVehicles = vehicles.filter(vehicle => 
+    vehicle.panico === true && !treatedEvents.has(vehicle._id)
+  );
 
   // Calculate dynamic grid size based on zoom level
   const getGridSizeForZoom = (zoom: number): number => {
@@ -39,6 +44,20 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     if (zoom >= 10) return 0.02;  // Grouped - ~2km
     if (zoom >= 8) return 0.05;   // Large groups - ~5km
     return 0.1; // Very large groups - ~10km
+  };
+
+  // Função para tratar um evento
+  const handleTreatEvent = (vehicleId: string, vehiclePrefix: string) => {
+    setTreatedEvents(prev => new Set([...prev, vehicleId]));
+    toast.success(`Evento do veículo ${vehiclePrefix} foi tratado e removido do mapa`, {
+      description: "O alerta de pânico foi resolvido pela equipe de segurança"
+    });
+    
+    // Atualizar o mapa após tratar o evento
+    setTimeout(() => {
+      addHeatMapLayer();
+      addAlertMarkers();
+    }, 100);
   };
 
   const initializeMap = () => {
@@ -145,13 +164,16 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       // Store original radius for zoom adjustments
       circleRadiusMap.current.set(heatCircle, radius);
 
-      // Add popup with alert info
+      // Add popup with alert info and treat option
       heatCircle.bindPopup(`
         <div style="font-family: system-ui; padding: 8px;">
           <strong>🚨 Alertas de Pânico</strong><br>
           <strong>Alertas:</strong> ${count}<br>
           <strong>Severidade:</strong> ${getAlertSeverityLabel(count)}<br>
-          <strong>Últimos veículos:</strong> ${alerts.slice(0, 3).map(v => v.prefixoVeiculo).join(', ')}
+          <strong>Últimos veículos:</strong> ${alerts.slice(0, 3).map(v => v.prefixoVeiculo).join(', ')}<br>
+          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
+            <small style="color: #666;">Clique nos marcadores individuais para tratar eventos específicos</small>
+          </div>
         </div>
       `);
 
@@ -206,13 +228,13 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       const [day, month, year] = datePart.split('/');
       const transmissionDate = new Date(`${year}-${month}-${day}T${timePart}`);
 
-      // Create popup content for panic alert
+      // Create popup content for panic alert with treat button
       const popupContent = `
-        <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
+        <div style="font-family: system-ui; padding: 8px; min-width: 250px;">
           <div style="font-weight: bold; color: ${color}; margin-bottom: 8px; font-size: 14px;">
             🚨 ALERTA DE PÂNICO - Veículo ${vehicle.prefixoVeiculo}
           </div>
-          <div style="font-size: 13px; line-height: 1.4;">
+          <div style="font-size: 13px; line-height: 1.4; margin-bottom: 12px;">
             <strong>Empresa:</strong> ${vehicle.empresaId}<br>
             <strong>Linha:</strong> ${vehicle.linha}<br>
             <strong>Motorista:</strong> ${vehicle.motorista || 'Não informado'}<br>
@@ -220,6 +242,26 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
             <strong>Horário do alerta:</strong> ${transmissionDate.toLocaleString('pt-BR')}<br>
             <strong>Tipo:</strong> Assalto<br>
             ${vehicle.velocidadeMedia ? `<strong>Velocidade:</strong> ${parseFloat(vehicle.velocidadeMedia).toFixed(1)} km/h` : ''}
+          </div>
+          <div style="border-top: 1px solid #eee; padding-top: 8px;">
+            <button 
+              onclick="window.treatPanicEvent('${vehicle._id}', '${vehicle.prefixoVeiculo}')"
+              style="
+                background-color: #059669; 
+                color: white; 
+                border: none; 
+                padding: 8px 16px; 
+                border-radius: 4px; 
+                cursor: pointer; 
+                font-size: 13px;
+                font-weight: 500;
+                width: 100%;
+              "
+              onmouseover="this.style.backgroundColor='#047857'"
+              onmouseout="this.style.backgroundColor='#059669'"
+            >
+              ✅ Marcar como Tratado
+            </button>
           </div>
         </div>
       `;
@@ -279,27 +321,37 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   useEffect(() => {
     initializeMap();
 
+    // Expor função globalmente para ser chamada pelos popups
+    (window as any).treatPanicEvent = handleTreatEvent;
+
     return () => {
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
+      // Limpar função global
+      delete (window as any).treatPanicEvent;
     };
   }, []);
 
   useEffect(() => {
     if (map.current && heatmapGroup.current && markersGroup.current) {
-      // Update both layers when vehicles change
+      // Update both layers when vehicles or treated events change
       addHeatMapLayer();
       addAlertMarkers();
     }
-  }, [vehicles, panicVehicles]);
+  }, [vehicles, panicVehicles, treatedEvents]);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
       <div className="mb-4 p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico (Clustering Dinâmico)</h3>
+          <div>
+            <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico (Clustering Dinâmico)</h3>
+            <p className="text-sm text-muted-foreground">
+              {panicVehicles.length} alertas ativos • {treatedEvents.size} eventos tratados
+            </p>
+          </div>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full bg-[#DC2626] opacity-70"></div>
@@ -316,7 +368,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           </div>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          🔍 Zoom IN: Divide áreas em clusters menores e mais detalhados • Zoom OUT: Agrupa em áreas maiores • Marcadores individuais aparecem apenas com zoom alto
+          🔍 Zoom IN: Divide áreas em clusters menores • Zoom OUT: Agrupa em áreas maiores • ✅ Clique nos marcadores para tratar eventos
         </p>
       </div>
       <div ref={mapContainer} className="w-full h-[600px]" />
