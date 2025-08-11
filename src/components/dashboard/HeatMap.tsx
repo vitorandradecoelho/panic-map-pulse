@@ -28,11 +28,19 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   
   // Estado para gerenciar eventos tratados
   const [treatedEvents, setTreatedEvents] = useState<Set<string>>(new Set());
+  const [intensityFilter, setIntensityFilter] = useState<'all' | 'moderate' | 'high' | 'critical'>('all');
 
   // Filter vehicles to only show panic alerts that haven't been treated
   const panicVehicles = vehicles.filter(vehicle => 
     vehicle.panico === true && !treatedEvents.has(vehicle._id)
   );
+
+  // Apply intensity filter
+  const getIntensityLevel = (alertCount: number): string => {
+    if (alertCount >= 3) return 'critical';
+    if (alertCount >= 2) return 'high';
+    return 'moderate';
+  };
 
   // Calculate dynamic grid size based on zoom level
   const getGridSizeForZoom = (zoom: number): number => {
@@ -144,6 +152,13 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
 
     // Create heat circles for panic alerts with fixed 100m radius
     alertMap.forEach(({ count, lat, lng, alerts }) => {
+      const intensityLevel = getIntensityLevel(count);
+      
+      // Apply intensity filter
+      if (intensityFilter !== 'all' && intensityLevel !== intensityFilter) {
+        return; // Skip this cluster if it doesn't match the filter
+      }
+      
       const intensity = Math.min(count / 2, 1); // More sensitive for alerts
       
       // Fixed radius of 100 meters
@@ -169,7 +184,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         <div style="font-family: system-ui; padding: 8px;">
           <strong>🚨 Alertas de Pânico</strong><br>
           <strong>Alertas:</strong> ${count}<br>
-          <strong>Severidade:</strong> ${getAlertSeverityLabel(count)}<br>
+          <strong>Intensidade:</strong> ${getAlertIntensityLabel(count)}<br>
           <strong>Últimos veículos:</strong> ${alerts.slice(0, 3).map(v => v.prefixoVeiculo).join(', ')}<br>
           <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
             <small style="color: #666;">Clique nos marcadores individuais para tratar eventos específicos</small>
@@ -277,7 +292,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     return 'hsl(var(--danger))'; // Single alerts using danger color
   };
 
-  const getAlertSeverityLabel = (alertCount: number): string => {
+  const getAlertIntensityLabel = (alertCount: number): string => {
     if (alertCount >= 3) return 'Crítica';
     if (alertCount >= 2) return 'Alta';
     return 'Moderada';
@@ -340,7 +355,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       addHeatMapLayer();
       addAlertMarkers();
     }
-  }, [vehicles, panicVehicles, treatedEvents]);
+  }, [vehicles, panicVehicles, treatedEvents, intensityFilter]);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
@@ -352,24 +367,38 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
               {panicVehicles.length} alertas ativos • {treatedEvents.size} eventos tratados
             </p>
           </div>
+          <div className="flex items-center space-x-4">
+            <select 
+              value={intensityFilter}
+              onChange={(e) => setIntensityFilter(e.target.value as any)}
+              className="px-3 py-1 text-sm bg-input border border-border rounded-md"
+            >
+              <option value="all">Todas Intensidades</option>
+              <option value="moderate">Intensidade Moderada</option>
+              <option value="high">Intensidade Alta</option>
+              <option value="critical">Intensidade Crítica</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-3">
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full bg-danger opacity-70"></div>
-              <span>Severidade Moderada</span>
+              <span>Intensidade Moderada</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-high))', opacity: 0.7}}></div>
-              <span>Severidade Alta</span>
+              <span>Intensidade Alta</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-critical))', opacity: 0.7}}></div>
-              <span>Severidade Crítica</span>
+              <span>Intensidade Crítica</span>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground">
+            🔍 Zoom IN: Divide áreas em clusters menores • Zoom OUT: Agrupa em áreas maiores • ✅ Clique nos marcadores para tratar eventos
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground mt-2">
-          🔍 Zoom IN: Divide áreas em clusters menores • Zoom OUT: Agrupa em áreas maiores • ✅ Clique nos marcadores para tratar eventos
-        </p>
       </div>
       <div ref={mapContainer} className="w-full h-[600px]" />
     </Card>
