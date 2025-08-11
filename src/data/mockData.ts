@@ -26,6 +26,44 @@ export const mockVehicleData: VehicleData[] = [
     "motorista": "0",
     "linha": "810",
     "panico": true
+  }, {
+    "_id": "6895fa0ad065117d9e2a40bc",
+    "empresaId": 2040,
+    "prefixoVeiculo": "30557",
+    "dataTransmissaoS": "08/08/2025 10:22:15",
+    "gps": {
+      "type": "Point",
+      "coordinates": [-38.485416666666666, -3.7383944444444444]
+    },
+    "motorista": "0",
+    "linha": "810",
+    "panico": true
+  },
+   {
+    "_id": "6895fa0ad065117d9e2a40bc",
+    "empresaId": 2040,
+    "prefixoVeiculo": "30557",
+    "dataTransmissaoS": "08/08/2025 10:22:15",
+    "gps": {
+      "type": "Point",
+      "coordinates": [-38.485416666666666, -3.7383944444444444]
+    },
+    "motorista": "0",
+    "linha": "810",
+    "panico": true
+  },
+   {
+    "_id": "6895fa0ad065117d9e2a40bc",
+    "empresaId": 2040,
+    "prefixoVeiculo": "30557",
+    "dataTransmissaoS": "08/08/2025 10:22:15",
+    "gps": {
+      "type": "Point",
+      "coordinates": [-38.485416666666666, -3.7383944444444444]
+    },
+    "motorista": "0",
+    "linha": "810",
+    "panico": true
   },
   {
     "_id": "6895f484d065117d9e2a3ea5",
@@ -40,6 +78,19 @@ export const mockVehicleData: VehicleData[] = [
     "linha": "120",
     "panico": true,
     "velocidadeMedia": "19.36318407960199"
+  },
+   {
+    "_id": "6895fa0ad065117d9e2a40bc",
+    "empresaId": 2040,
+    "prefixoVeiculo": "30557",
+    "dataTransmissaoS": "08/08/2025 10:22:15",
+    "gps": {
+      "type": "Point",
+      "coordinates": [-38.485416666666666, -3.7383944444444444]
+    },
+    "motorista": "0",
+    "linha": "810",
+    "panico": true
   },
   {
     "_id": "6895edbed065117d9e2a3c45",
