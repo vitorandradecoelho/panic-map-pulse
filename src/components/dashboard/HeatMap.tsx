@@ -195,7 +195,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
 
     panicVehicles.forEach(vehicle => {
       const [lng, lat] = vehicle.gps.coordinates;
-      const color = '#DC2626'; // Red for panic alerts
+      const color = 'hsl(var(--danger))'; // Using design system danger color
       
       // Scale marker size based on zoom
       const markerSize = Math.min(20, Math.max(12, currentZoom - 10));
@@ -272,9 +272,9 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   };
 
   const getPanicAlertColor = (alertCount: number): string => {
-    if (alertCount >= 3) return '#7F1D1D'; // Very dark red for high alert concentration
-    if (alertCount >= 2) return '#991B1B'; // Dark red for medium alert concentration
-    return '#DC2626'; // Red for single alerts
+    if (alertCount >= 3) return 'hsl(var(--heat-critical))'; // Critical level using design system
+    if (alertCount >= 2) return 'hsl(var(--heat-high))'; // High level using design system  
+    return 'hsl(var(--danger))'; // Single alerts using danger color
   };
 
   const getAlertSeverityLabel = (alertCount: number): string => {
@@ -354,15 +354,15 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           </div>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-[#DC2626] opacity-70"></div>
+              <div className="w-4 h-4 rounded-full bg-danger opacity-70"></div>
               <span>Severidade Moderada</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-[#991B1B] opacity-70"></div>
+              <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-high))', opacity: 0.7}}></div>
               <span>Severidade Alta</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-[#7F1D1D] opacity-70"></div>
+              <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-critical))', opacity: 0.7}}></div>
               <span>Severidade Crítica</span>
             </div>
           </div>
