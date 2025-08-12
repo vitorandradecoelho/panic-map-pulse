@@ -161,8 +161,11 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       
       const intensity = Math.min(count / 2, 1); // More sensitive for alerts
       
-      // Fixed radius of 100 meters
-      const radius = 100;
+      // Dynamic radius based on alert count and zoom level
+      const baseRadius = 50; // Base radius in meters
+      const radiusMultiplier = Math.min(count * 0.5, 3); // Scale with alert count, max 3x
+      const zoomMultiplier = Math.max(0.5, currentZoom / 14); // Scale with zoom level
+      const radius = baseRadius * radiusMultiplier * zoomMultiplier;
       
       // Use red tones for panic alerts, more intense with higher count
       const color = getPanicAlertColor(count);
@@ -260,7 +263,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           </div>
           <div style="border-top: 1px solid #eee; padding-top: 8px;">
             <button 
-              onclick="window.treatPanicEvent('${vehicle._id}', '${vehicle.prefixoVeiculo}')"
+              onclick="window.treatPanicEvent('${vehicle.prefixoVeiculo}')"
               style="
                 background-color: #059669; 
                 color: white; 
@@ -287,9 +290,9 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   };
 
   const getPanicAlertColor = (alertCount: number): string => {
-    if (alertCount >= 3) return 'hsl(var(--heat-critical))'; // Critical level using design system
-    if (alertCount >= 2) return 'hsl(var(--heat-high))'; // High level using design system  
-    return 'hsl(var(--danger))'; // Single alerts using danger color
+    if (alertCount >= 3) return 'hsl(var(--heat-critical))'; // Crítico = Roxo
+    if (alertCount >= 2) return 'hsl(var(--heat-high))'; // Alta = Vermelha  
+    return 'hsl(var(--heat-moderate))'; // Moderada = Laranja
   };
 
   const getAlertIntensityLabel = (alertCount: number): string => {
@@ -337,7 +340,12 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     initializeMap();
 
     // Expor função globalmente para ser chamada pelos popups
-    (window as any).treatPanicEvent = handleTreatEvent;
+    (window as any).treatPanicEvent = (prefixo: string) => {
+      const vehicle = panicVehicles.find(v => v.prefixoVeiculo === prefixo);
+      if (vehicle) {
+        handleTreatEvent(vehicle._id, prefixo);
+      }
+    };
 
     return () => {
       if (map.current) {
@@ -364,7 +372,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           <div>
             <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico (Clustering Dinâmico)</h3>
             <p className="text-sm text-muted-foreground">
-              {panicVehicles.length} alertas ativos • {treatedEvents.size} eventos tratados
+              {panicVehicles.length} alertas de pânico
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -383,16 +391,16 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-danger opacity-70"></div>
-              <span>Intensidade Moderada</span>
+              <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-moderate))', opacity: 0.7}}></div>
+              <span>Intensidade Moderada (Laranja)</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-high))', opacity: 0.7}}></div>
-              <span>Intensidade Alta</span>
+              <span>Intensidade Alta (Vermelha)</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-critical))', opacity: 0.7}}></div>
-              <span>Intensidade Crítica</span>
+              <span>Intensidade Crítica (Roxo)</span>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">

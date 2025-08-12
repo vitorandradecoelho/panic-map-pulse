@@ -118,7 +118,7 @@ const VehicleDashboard = () => {
         />
 
         {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <KPICard
             title="Total de Veículos"
             value={kpiData.totalVehicles}
@@ -129,48 +129,12 @@ const VehicleDashboard = () => {
           />
           
           <KPICard
-            title="Com Motorista"
-            value={`${kpiData.totalVehicles > 0 ? Math.round((kpiData.vehiclesWithDriver / kpiData.totalVehicles) * 100) : 0}%`}
-            icon={<Building className="h-6 w-6" />}
-            trend="up"
-            trendValue="+5%"
-            className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/20"
-          />
-          
-          <KPICard
-            title="Velocidade Média"
-            value={`${Math.round(kpiData.avgSpeed)} km/h`}
-            icon={<Gauge className="h-6 w-6" />}
-            trend="neutral"
-            trendValue="0%"
-            className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-orange-500/20"
-          />
-          
-          <KPICard
-            title="Linhas Ativas"
-            value={kpiData.uniqueLines}
-            icon={<MapPin className="h-6 w-6" />}
-            trend="up"
-            trendValue="+2"
-            className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-purple-500/20"
-          />
-          
-          <KPICard
             title="Empresas"
             value={kpiData.uniqueCompanies}
             icon={<Building className="h-6 w-6" />}
             trend="neutral"
             trendValue="0"
             className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border-cyan-500/20"
-          />
-          
-          <KPICard
-            title="Última Transmissão"
-            value={kpiData.latestTransmission ? format(kpiData.latestTransmission, "HH:mm", { locale: ptBR }) : "N/A"}
-            icon={<Clock className="h-6 w-6" />}
-            trend="neutral"
-            trendValue="Agora"
-            className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 border-indigo-500/20"
           />
         </div>
 
