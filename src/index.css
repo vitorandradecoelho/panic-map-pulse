@@ -48,7 +48,7 @@ All colors MUST be HSL.
     --info-foreground: 210 40% 98%;
 
     /* Heat map intensities - cores mais vibrantes */
-    --heat-moderate: 33 100% 50%; /* Laranja mais vibrante */
+    --heat-moderate: 120 100% 40%; /* Verde vibrante */
     --heat-high: 0 100% 50%; /* Vermelho puro */
     --heat-critical: 270 100% 60%; /* Roxo mais vibrante */
 

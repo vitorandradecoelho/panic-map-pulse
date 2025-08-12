@@ -462,7 +462,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
               <input
                 type="range"
                 min="0.5"
-                max="3"
+                max="10"
                 step="0.1"
                 value={radiusMultiplier}
                 onChange={(e) => setRadiusMultiplier(parseFloat(e.target.value))}
@@ -486,7 +486,7 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-moderate))', opacity: 0.7}}></div>
-              <span>Intensidade Moderada (Laranja)</span>
+              <span>Intensidade Moderada (Verde)</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded-full" style={{backgroundColor: 'hsl(var(--heat-high))', opacity: 0.7}}></div>
