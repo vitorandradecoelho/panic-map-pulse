@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Truck, MapPin, Clock, Gauge } from "lucide-react";
+import { useGeocoding } from "@/hooks/useGeocoding";
+import { useState, useEffect } from "react";
 
 interface VehicleTableProps {
   vehicles: VehicleData[];
@@ -21,6 +23,9 @@ const getSpeedStatus = (speed?: string) => {
 };
 
 export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
+  const { getAddress } = useGeocoding();
+  const [addresses, setAddresses] = useState<{ [key: string]: string }>({});
+
   // Sort vehicles by transmission time (most recent first)
   const sortedVehicles = [...vehicles].sort((a, b) => {
     const parseDate = (dateStr: string) => {
@@ -30,6 +35,34 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
     };
     return parseDate(b.dataTransmissaoS).getTime() - parseDate(a.dataTransmissaoS).getTime();
   });
+
+  // Load addresses for visible vehicles
+  useEffect(() => {
+    const loadAddresses = async () => {
+      const newAddresses: { [key: string]: string } = {};
+      
+      for (const vehicle of sortedVehicles.slice(0, 50)) { // Limit to first 50 for performance
+        const lat = vehicle.gps.coordinates[1];
+        const lng = vehicle.gps.coordinates[0];
+        const key = vehicle._id;
+        
+        if (!addresses[key]) {
+          try {
+            const address = await getAddress(lat, lng);
+            newAddresses[key] = address;
+          } catch (error) {
+            newAddresses[key] = `${lat.toFixed(6)}°, ${lng.toFixed(6)}°`;
+          }
+        }
+      }
+      
+      if (Object.keys(newAddresses).length > 0) {
+        setAddresses(prev => ({ ...prev, ...newAddresses }));
+      }
+    };
+
+    loadAddresses();
+  }, [sortedVehicles, getAddress, addresses]);
 
   return (
     <Card className={`backdrop-blur-sm bg-card/80 border ${className}`}>
@@ -60,7 +93,7 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                 <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4" />
-                    <span>Localização</span>
+                    <span>Localidade</span>
                   </div>
                 </th>
                 <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Linha</th>
@@ -101,16 +134,16 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-2">
-                      <div className="flex flex-col">
-                        <span className="text-sm text-card-foreground font-mono">
-                          {vehicle.gps.coordinates[1].toFixed(6)}°
-                        </span>
-                        <span className="text-sm text-card-foreground font-mono">
-                          {vehicle.gps.coordinates[0].toFixed(6)}°
-                        </span>
-                      </div>
-                    </td>
+                     <td className="py-4 px-2">
+                       <div className="flex flex-col max-w-[200px]">
+                         <span className="text-sm text-card-foreground truncate" title={addresses[vehicle._id] || 'Carregando...'}>
+                           {addresses[vehicle._id] || 'Carregando...'}
+                         </span>
+                         <span className="text-xs text-muted-foreground font-mono">
+                           {vehicle.gps.coordinates[1].toFixed(4)}°, {vehicle.gps.coordinates[0].toFixed(4)}°
+                         </span>
+                       </div>
+                     </td>
                     <td className="py-4 px-2">
                       <Badge variant="outline" className="font-mono">
                         {vehicle.linha}
