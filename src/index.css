@@ -47,10 +47,10 @@ All colors MUST be HSL.
     --info: 217 91% 60%;
     --info-foreground: 210 40% 98%;
 
-    /* Heat map intensities */
-    --heat-moderate: 25 95% 53%; /* Laranja */
-    --heat-high: 0 84% 60%; /* Vermelha */
-    --heat-critical: 270 91% 65%; /* Roxo */
+    /* Heat map intensities - cores mais vibrantes */
+    --heat-moderate: 33 100% 50%; /* Laranja mais vibrante */
+    --heat-high: 0 100% 50%; /* Vermelho puro */
+    --heat-critical: 270 100% 60%; /* Roxo mais vibrante */
 
     /* Glass effects */
     --glass-bg: 220 27% 12% / 0.8;

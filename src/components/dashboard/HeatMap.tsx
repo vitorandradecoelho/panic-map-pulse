@@ -178,10 +178,10 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         const heatCircle = L.circle([lat + gridSize/2, lng + gridSize/2], {
           color: color,
           fillColor: color,
-          fillOpacity: 0.4 + (intensity * 0.4), // More opacity for higher alert density
+          fillOpacity: 0.7 + (intensity * 0.2), // Opacidade mais alta para melhor visibilidade
           radius: radius,
-          weight: 3,
-          opacity: 0.8
+          weight: 4, // Borda mais espessa
+          opacity: 1 // Opacidade máxima da borda
         });
 
         // Store original radius for zoom adjustments
@@ -224,10 +224,10 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         const heatCircle = L.circle([lat, lng], {
           color: color,
           fillColor: color,
-          fillOpacity: 0.5,
+          fillOpacity: 0.8, // Opacidade alta para alertas individuais
           radius: radius,
-          weight: 3,
-          opacity: 0.8
+          weight: 4, // Borda mais espessa
+          opacity: 1 // Opacidade máxima da borda
         });
 
         // Store original radius for zoom adjustments
@@ -381,9 +381,9 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       // Adjust circle opacity and visibility based on zoom
       heatmapGroup.current.eachLayer((layer: any) => {
         if (layer instanceof L.Circle) {
-          // Make circles more transparent when zoomed in (so markers are more visible)
-          const opacity = zoom >= 15 ? 0.3 : zoom >= 13 ? 0.5 : 0.7;
-          const fillOpacity = zoom >= 15 ? 0.2 : zoom >= 13 ? 0.3 : 0.4;
+          // Manter alta visibilidade em todos os zoom levels
+          const opacity = zoom >= 15 ? 0.8 : zoom >= 13 ? 0.9 : 1;
+          const fillOpacity = zoom >= 15 ? 0.6 : zoom >= 13 ? 0.7 : 0.8;
           
           layer.setStyle({
             opacity: opacity,
