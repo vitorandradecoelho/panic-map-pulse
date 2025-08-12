@@ -26,9 +26,11 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   const circleRadiusMap = useRef<Map<L.Circle, number>>(new Map());
   const currentZoomLevel = useRef<number>(12);
   
-  // Estado para gerenciar eventos tratados
+  // Estado para gerenciar eventos tratados e configurações
   const [treatedEvents, setTreatedEvents] = useState<Set<string>>(new Set());
   const [intensityFilter, setIntensityFilter] = useState<'all' | 'moderate' | 'high' | 'critical'>('all');
+  const [clusteringEnabled, setClusteringEnabled] = useState<boolean>(true);
+  const [radiusMultiplier, setRadiusMultiplier] = useState<number>(1);
 
   // Filter vehicles to only show panic alerts that haven't been treated
   const panicVehicles = vehicles.filter(vehicle => 
@@ -132,71 +134,139 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
 
     // Get current zoom level for dynamic clustering
     const currentZoom = map.current.getZoom();
-    const gridSize = getGridSizeForZoom(currentZoom);
     
-    // Create density grid for panic alerts with dynamic grid size
-    const alertMap = new Map<string, { count: number, lat: number, lng: number, alerts: VehicleData[] }>();
+    if (clusteringEnabled) {
+      // CLUSTERING ENABLED - Group alerts by dynamic grid
+      const gridSize = getGridSizeForZoom(currentZoom);
+      
+      // Create density grid for panic alerts with dynamic grid size
+      const alertMap = new Map<string, { count: number, lat: number, lng: number, alerts: VehicleData[] }>();
 
-    // Group panic alerts by grid cells
-    panicVehicles.forEach(vehicle => {
-      const [lng, lat] = vehicle.gps.coordinates;
-      const gridLat = Math.floor(lat / gridSize) * gridSize;
-      const gridLng = Math.floor(lng / gridSize) * gridSize;
-      const key = `${gridLat},${gridLng}`;
-      
-      const existing = alertMap.get(key) || { count: 0, lat: gridLat, lng: gridLng, alerts: [] };
-      existing.count += 1;
-      existing.alerts.push(vehicle);
-      alertMap.set(key, existing);
-    });
-
-    // Create heat circles for panic alerts with fixed 100m radius
-    alertMap.forEach(({ count, lat, lng, alerts }) => {
-      const intensityLevel = getIntensityLevel(count);
-      
-      // Apply intensity filter
-      if (intensityFilter !== 'all' && intensityLevel !== intensityFilter) {
-        return; // Skip this cluster if it doesn't match the filter
-      }
-      
-      const intensity = Math.min(count / 2, 1); // More sensitive for alerts
-      
-      // Dynamic radius based on alert count and zoom level
-      const baseRadius = 50; // Base radius in meters
-      const radiusMultiplier = Math.min(count * 0.5, 3); // Scale with alert count, max 3x
-      const zoomMultiplier = Math.max(0.5, currentZoom / 14); // Scale with zoom level
-      const radius = baseRadius * radiusMultiplier * zoomMultiplier;
-      
-      // Use red tones for panic alerts, more intense with higher count
-      const color = getPanicAlertColor(count);
-      
-      const heatCircle = L.circle([lat + gridSize/2, lng + gridSize/2], {
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.4 + (intensity * 0.4), // More opacity for higher alert density
-        radius: radius,
-        weight: 3,
-        opacity: 0.8
+      // Group panic alerts by grid cells
+      panicVehicles.forEach(vehicle => {
+        const [lng, lat] = vehicle.gps.coordinates;
+        const gridLat = Math.floor(lat / gridSize) * gridSize;
+        const gridLng = Math.floor(lng / gridSize) * gridSize;
+        const key = `${gridLat},${gridLng}`;
+        
+        const existing = alertMap.get(key) || { count: 0, lat: gridLat, lng: gridLng, alerts: [] };
+        existing.count += 1;
+        existing.alerts.push(vehicle);
+        alertMap.set(key, existing);
       });
 
-      // Store original radius for zoom adjustments
-      circleRadiusMap.current.set(heatCircle, radius);
+      // Create heat circles for clustered panic alerts
+      alertMap.forEach(({ count, lat, lng, alerts }) => {
+        const intensityLevel = getIntensityLevel(count);
+        
+        // Apply intensity filter
+        if (intensityFilter !== 'all' && intensityLevel !== intensityFilter) {
+          return; // Skip this cluster if it doesn't match the filter
+        }
+        
+        const intensity = Math.min(count / 2, 1); // More sensitive for alerts
+        
+        // Dynamic radius based on alert count and zoom level
+        const baseRadius = 50; // Base radius in meters
+        const radiusClusterMultiplier = Math.min(count * 0.5, 3); // Scale with alert count, max 3x
+        const zoomMultiplier = Math.max(0.5, currentZoom / 14); // Scale with zoom level
+        const radius = baseRadius * radiusClusterMultiplier * zoomMultiplier * radiusMultiplier;
+        
+        // Use appropriate color for panic alerts
+        const color = getPanicAlertColor(count);
+        
+        const heatCircle = L.circle([lat + gridSize/2, lng + gridSize/2], {
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.4 + (intensity * 0.4), // More opacity for higher alert density
+          radius: radius,
+          weight: 3,
+          opacity: 0.8
+        });
 
-      // Add popup with alert info and treat option
-      heatCircle.bindPopup(`
-        <div style="font-family: system-ui; padding: 8px;">
-          <strong>🚨 Alertas de Pânico</strong><br>
-          <strong>Alertas:</strong> ${count}<br>
-          <strong>Intensidade:</strong> ${getAlertIntensityLabel(count)}<br>
-          <strong>Últimos veículos:</strong> ${alerts.slice(0, 3).map(v => v.prefixoVeiculo).join(', ')}<br>
-          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
-            <small style="color: #666;">Clique nos marcadores individuais para tratar eventos específicos</small>
+        // Store original radius for zoom adjustments
+        circleRadiusMap.current.set(heatCircle, radius);
+
+        // Add popup with alert info and treat option
+        heatCircle.bindPopup(`
+          <div style="font-family: system-ui; padding: 8px;">
+            <strong>🚨 Alertas de Pânico (Cluster)</strong><br>
+            <strong>Alertas:</strong> ${count}<br>
+            <strong>Intensidade:</strong> ${getAlertIntensityLabel(count)}<br>
+            <strong>Últimos veículos:</strong> ${alerts.slice(0, 3).map(v => v.prefixoVeiculo).join(', ')}<br>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
+              <small style="color: #666;">Clique nos marcadores individuais para tratar eventos específicos</small>
+            </div>
           </div>
-        </div>
-      `);
+        `);
 
-      heatmapGroup.current?.addLayer(heatCircle);
-    });
+        heatmapGroup.current?.addLayer(heatCircle);
+      });
+    } else {
+      // CLUSTERING DISABLED - Show individual circles for each vehicle
+      panicVehicles.forEach(vehicle => {
+        const intensityLevel = getIntensityLevel(1); // Each vehicle is individual
+        
+        // Apply intensity filter (all individual alerts are moderate)
+        if (intensityFilter !== 'all' && intensityLevel !== intensityFilter) {
+          return;
+        }
+        
+        const [lng, lat] = vehicle.gps.coordinates;
+        
+        // Fixed radius for individual alerts
+        const baseRadius = 30; // Smaller base radius for individual alerts
+        const zoomMultiplier = Math.max(0.5, currentZoom / 14);
+        const radius = baseRadius * zoomMultiplier * radiusMultiplier;
+        
+        const color = getPanicAlertColor(1); // Individual alert color
+        
+        const heatCircle = L.circle([lat, lng], {
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.5,
+          radius: radius,
+          weight: 3,
+          opacity: 0.8
+        });
+
+        // Store original radius for zoom adjustments
+        circleRadiusMap.current.set(heatCircle, radius);
+
+        // Add popup with individual vehicle info
+        const [datePart, timePart] = vehicle.dataTransmissaoS.split(' ');
+        const [day, month, year] = datePart.split('/');
+        const transmissionDate = new Date(`${year}-${month}-${day}T${timePart}`);
+
+        heatCircle.bindPopup(`
+          <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
+            <strong>🚨 Alerta Individual - ${vehicle.prefixoVeiculo}</strong><br>
+            <strong>Empresa:</strong> ${vehicle.empresaId}<br>
+            <strong>Linha:</strong> ${vehicle.linha}<br>
+            <strong>Horário:</strong> ${transmissionDate.toLocaleString('pt-BR')}<br>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #ccc;">
+              <button 
+                onclick="window.treatPanicEvent('${vehicle.prefixoVeiculo}')"
+                style="
+                  background-color: #059669; 
+                  color: white; 
+                  border: none; 
+                  padding: 6px 12px; 
+                  border-radius: 4px; 
+                  cursor: pointer; 
+                  font-size: 12px;
+                  width: 100%;
+                "
+              >
+                ✅ Marcar como Tratado
+              </button>
+            </div>
+          </div>
+        `);
+
+        heatmapGroup.current?.addLayer(heatCircle);
+      });
+    }
   };
 
   const addAlertMarkers = () => {
@@ -363,19 +433,43 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       addHeatMapLayer();
       addAlertMarkers();
     }
-  }, [vehicles, panicVehicles, treatedEvents, intensityFilter]);
+  }, [vehicles, panicVehicles, treatedEvents, intensityFilter, clusteringEnabled, radiusMultiplier]);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
       <div className="mb-4 p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">🚨 Mapa de Alertas de Pânico (Clustering Dinâmico)</h3>
+            <h3 className="text-lg font-semibold">
+              🚨 Mapa de Alertas de Pânico {clusteringEnabled ? '(Clustering Dinâmico)' : '(Alertas Individuais)'}
+            </h3>
             <p className="text-sm text-muted-foreground">
               {panicVehicles.length} alertas de pânico
             </p>
           </div>
           <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium">Clustering:</label>
+              <input
+                type="checkbox"
+                checked={clusteringEnabled}
+                onChange={(e) => setClusteringEnabled(e.target.checked)}
+                className="w-4 h-4"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium">Raio:</label>
+              <input
+                type="range"
+                min="0.5"
+                max="3"
+                step="0.1"
+                value={radiusMultiplier}
+                onChange={(e) => setRadiusMultiplier(parseFloat(e.target.value))}
+                className="w-20"
+              />
+              <span className="text-xs text-muted-foreground w-8">{radiusMultiplier.toFixed(1)}x</span>
+            </div>
             <select 
               value={intensityFilter}
               onChange={(e) => setIntensityFilter(e.target.value as any)}
@@ -404,7 +498,10 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            🔍 Zoom IN: Divide áreas em clusters menores • Zoom OUT: Agrupa em áreas maiores • ✅ Clique nos marcadores para tratar eventos
+            {clusteringEnabled 
+              ? '🔍 Zoom IN: Divide áreas em clusters menores • Zoom OUT: Agrupa em áreas maiores • ✅ Clique nos marcadores para tratar eventos'
+              : '📍 Modo Individual: Cada alerta é mostrado separadamente • ✅ Clique nos círculos para tratar eventos'
+            }
           </p>
         </div>
       </div>
