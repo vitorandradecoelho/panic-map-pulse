@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { mockVehicleData, VehicleData, getVehiclesInDateRange } from "@/data/mockData";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { HeatMap } from "@/components/dashboard/HeatMap";
-import { AlertTriangle, Clock, MapPin, Users, Shield, TrendingUp } from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Users, Shield, TrendingUp, CalendarIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,7 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 
 const AlertsMonitoring = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
