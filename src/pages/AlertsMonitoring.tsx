@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { mockVehicleData, VehicleData, getVehiclesInDateRange } from "@/data/mockData";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { HeatMap } from "@/components/dashboard/HeatMap";
-import { AlertTriangle, Clock, MapPin, Users, Shield, TrendingUp, CalendarIcon } from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Users, Shield, TrendingUp, CalendarIcon, Home, Truck } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,6 +15,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const AlertsMonitoring = () => {
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedLine, setSelectedLine] = useState<string>("todas");
@@ -140,14 +142,35 @@ const AlertsMonitoring = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Shield className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Sistema de Monitoramento - Alertas de Pânico</h1>
-              <p className="text-sm text-muted-foreground">Última atualização: 15/01/2025 14:30</p>
+        <div className="border-b bg-card/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="rounded-lg bg-primary/10 p-2">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">Alertas de Pânico</h1>
+                  <p className="text-sm text-muted-foreground">Última atualização: 15/01/2025 14:30</p>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/")}
+                  className="flex items-center space-x-2"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Menu Principal</span>
+                </Button>
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  className="flex items-center space-x-2"
+                >
+                  <Truck className="h-4 w-4" />
+                  <span>Dashboard Veículos</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
