@@ -1,34 +1,26 @@
-import axios from 'axios';
+import axios from "axios";
+import { getToken } from "./auth";
 
-const api = axios.create({
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const api = axios.create();
+
+api.interceptors.request.use(async (config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Zone =
+      sessionStorage.getItem("zn") || localStorage.getItem("zone") || "4";
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
-// Request interceptor to add token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('zn');
-      // Optionally redirect to login
+      // Token expired or invalid
+      localStorage.removeItem("token");
+      sessionStorage.removeItem("zn");
+      window.location.href = "/login"; // Redirect to login if you have one
     }
     return Promise.reject(error);
   }
