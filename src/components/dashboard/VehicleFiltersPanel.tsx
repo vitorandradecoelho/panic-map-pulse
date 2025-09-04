@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Filter, X } from "lucide-react";
+import { CalendarIcon, Filter, X, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
-import { getUniqueLines, getUniqueCompanies } from "@/data/mockData";
+import { fetchLines, fetchCompanies, LineData, CompanyData } from "@/services/filtersApi";
 
 interface VehicleFiltersPanelProps {
   onDateRangeChange: (startDate: Date | null, endDate: Date | null) => void;
@@ -32,9 +32,38 @@ export const VehicleFiltersPanel = ({
     from: selectedDateRange.start || undefined,
     to: selectedDateRange.end || undefined,
   });
+  
+  const [lines, setLines] = useState<LineData[]>([]);
+  const [companies, setCompanies] = useState<CompanyData[]>([]);
+  const [loadingLines, setLoadingLines] = useState(true);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
 
-  const lines = getUniqueLines();
-  const companies = getUniqueCompanies();
+  useEffect(() => {
+    const loadFiltersData = async () => {
+      try {
+        const [linesData, companiesData] = await Promise.all([
+          fetchLines().catch(err => {
+            console.error("Erro ao carregar linhas:", err);
+            return [];
+          }),
+          fetchCompanies().catch(err => {
+            console.error("Erro ao carregar empresas:", err);
+            return [];
+          })
+        ]);
+        
+        setLines(linesData);
+        setCompanies(companiesData);
+      } catch (error) {
+        console.error("Erro ao carregar dados dos filtros:", error);
+      } finally {
+        setLoadingLines(false);
+        setLoadingCompanies(false);
+      }
+    };
+
+    loadFiltersData();
+  }, []);
 
   const handleDateSelect = (range: DateRange | undefined) => {
     setDateRange(range);
@@ -86,15 +115,23 @@ export const VehicleFiltersPanel = ({
             <Select
               value={selectedLine || "all"}
               onValueChange={(value) => onLineChange(value === "all" ? null : value)}
+              disabled={loadingLines}
             >
               <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Todas as linhas" />
+                {loadingLines ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>Carregando...</span>
+                  </>
+                ) : (
+                  <SelectValue placeholder="Todas as linhas" />
+                )}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as linhas</SelectItem>
                 {lines.map((line) => (
-                  <SelectItem key={line} value={line}>
-                    Linha {line}
+                  <SelectItem key={line.id} value={line.id}>
+                    Linha {line.nome || line.id}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -107,15 +144,23 @@ export const VehicleFiltersPanel = ({
             <Select
               value={selectedCompany?.toString() || "all"}
               onValueChange={(value) => onCompanyChange(value === "all" ? null : parseInt(value))}
+              disabled={loadingCompanies}
             >
               <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Todas as empresas" />
+                {loadingCompanies ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>Carregando...</span>
+                  </>
+                ) : (
+                  <SelectValue placeholder="Todas as empresas" />
+                )}
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as empresas</SelectItem>
                 {companies.map((company) => (
-                  <SelectItem key={company} value={company.toString()}>
-                    Empresa {company}
+                  <SelectItem key={company.id} value={company.id.toString()}>
+                    {company.nome || `Empresa ${company.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
