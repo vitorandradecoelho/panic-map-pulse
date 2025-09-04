@@ -1,0 +1,62 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "dashboard": {
+    "title": "Vehicle Dashboard",
+    "filters": {
+      "title": "Filters",
+      "line": "Line",
+      "company": "Company",
+      "period": "Period",
+      "allLines": "All lines",
+      "allCompanies": "All companies",
+      "selectPeriod": "Select period",
+      "clear": "Clear"
+    },
+    "kpis": {
+      "totalVehicles": "Total Vehicles",
+      "vehiclesWithDrivers": "Vehicles with Drivers",
+      "averageSpeed": "Average Speed",
+      "uniqueLines": "Unique Lines",
+      "uniqueCompanies": "Unique Companies",
+      "lastTransmission": "Last Transmission"
+    },
+    "table": {
+      "title": "Vehicle List",
+      "noVehicles": "No vehicles found for the selected filters.",
+      "columns": {
+        "vehicle": "Vehicle",
+        "driver": "Driver",
+        "line": "Line",
+        "company": "Company",
+        "speed": "Speed",
+        "location": "Location",
+        "lastUpdate": "Last Update"
+      },
+      "speed": {
+        "high": "High",
+        "medium": "Medium",
+        "normal": "Normal",
+        "low": "Low"
+      }
+    }
+  },
+  "alerts": {
+    "title": "Alerts Monitoring",
+    "panic": "Panic",
+    "emergency": "Emergency",
+    "maintenance": "Maintenance"
+  }
+}

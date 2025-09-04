@@ -4,11 +4,14 @@ import { VehicleFiltersPanel } from "@/components/dashboard/VehicleFiltersPanel"
 import { VehicleTable } from "@/components/dashboard/VehicleTable";
 import { HeatMap } from "@/components/dashboard/HeatMap";
 import { KPICard } from "@/components/dashboard/KPICard";
+import { Header } from "@/components/layout/Header";
 import { Truck, MapPin, Gauge, Building, TrendingUp, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const VehicleDashboard = () => {
+  const { t } = useTranslation();
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedLine, setSelectedLine] = useState<string | null>(null);
@@ -92,13 +95,14 @@ const VehicleDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                Dashboard de Veículos
+                {t('dashboard.title')}
               </h1>
               <p className="text-muted-foreground">
                 Monitoramento em tempo real • {dateRangeText}
@@ -120,7 +124,7 @@ const VehicleDashboard = () => {
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <KPICard
-            title="Total de Veículos"
+            title={t('dashboard.kpis.totalVehicles')}
             value={kpiData.totalVehicles}
             icon={<Truck className="h-6 w-6" />}
             trend="neutral"
@@ -129,7 +133,7 @@ const VehicleDashboard = () => {
           />
           
           <KPICard
-            title="Empresas"
+            title={t('dashboard.kpis.uniqueCompanies')}
             value={kpiData.uniqueCompanies}
             icon={<Building className="h-6 w-6" />}
             trend="neutral"

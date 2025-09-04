@@ -1,0 +1,62 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "all": "Todos",
+    "none": "Ninguno",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "dashboard": {
+    "title": "Panel de Vehículos",
+    "filters": {
+      "title": "Filtros",
+      "line": "Línea",
+      "company": "Empresa",
+      "period": "Período",
+      "allLines": "Todas las líneas",
+      "allCompanies": "Todas las empresas",
+      "selectPeriod": "Seleccionar período",
+      "clear": "Limpiar"
+    },
+    "kpis": {
+      "totalVehicles": "Total de Vehículos",
+      "vehiclesWithDrivers": "Vehículos con Conductores",
+      "averageSpeed": "Velocidad Promedio",
+      "uniqueLines": "Líneas Únicas",
+      "uniqueCompanies": "Empresas Únicas",
+      "lastTransmission": "Última Transmisión"
+    },
+    "table": {
+      "title": "Lista de Vehículos",
+      "noVehicles": "No se encontraron vehículos para los filtros seleccionados.",
+      "columns": {
+        "vehicle": "Vehículo",
+        "driver": "Conductor",
+        "line": "Línea",
+        "company": "Empresa",
+        "speed": "Velocidad",
+        "location": "Ubicación",
+        "lastUpdate": "Última Actualización"
+      },
+      "speed": {
+        "high": "Alta",
+        "medium": "Media",
+        "normal": "Normal",
+        "low": "Baja"
+      }
+    }
+  },
+  "alerts": {
+    "title": "Monitoreo de Alertas",
+    "panic": "Pánico",
+    "emergency": "Emergencia",
+    "maintenance": "Mantenimiento"
+  }
+}

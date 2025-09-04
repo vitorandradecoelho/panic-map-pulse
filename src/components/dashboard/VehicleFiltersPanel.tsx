@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { fetchLines, fetchCompanies, LineData, CompanyData } from "@/services/filtersApi";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface VehicleFiltersPanelProps {
   onDateRangeChange: (startDate: Date | null, endDate: Date | null) => void;
@@ -28,6 +29,7 @@ export const VehicleFiltersPanel = ({
   selectedLine,
   selectedCompany,
 }: VehicleFiltersPanelProps) => {
+  const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: selectedDateRange.start || undefined,
     to: selectedDateRange.end || undefined,
@@ -88,7 +90,7 @@ export const VehicleFiltersPanel = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-lg font-semibold text-card-foreground">Filtros</h3>
+            <h3 className="text-lg font-semibold text-card-foreground">{t('dashboard.filters.title')}</h3>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {activeFiltersCount}
@@ -103,7 +105,7 @@ export const VehicleFiltersPanel = ({
               className="text-muted-foreground hover:text-card-foreground"
             >
               <X className="h-4 w-4 mr-1" />
-              Limpar
+              {t('dashboard.filters.clear')}
             </Button>
           )}
         </div>
@@ -111,7 +113,7 @@ export const VehicleFiltersPanel = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Line Filter */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-card-foreground">Linha</label>
+            <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.line')}</label>
             <Select
               value={selectedLine || "all"}
               onValueChange={(value) => onLineChange(value === "all" ? null : value)}
@@ -121,17 +123,17 @@ export const VehicleFiltersPanel = ({
                 {loadingLines ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>Carregando...</span>
+                    <span>{t('common.loading')}</span>
                   </>
                 ) : (
-                  <SelectValue placeholder="Todas as linhas" />
+                  <SelectValue placeholder={t('dashboard.filters.allLines')} />
                 )}
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as linhas</SelectItem>
+                <SelectItem value="all">{t('dashboard.filters.allLines')}</SelectItem>
                 {lines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
-                    Linha {line.nome || line.id}
+                    {t('dashboard.filters.line')} {line.nome || line.id}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -140,7 +142,7 @@ export const VehicleFiltersPanel = ({
 
           {/* Company Filter */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-card-foreground">Empresa</label>
+            <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.company')}</label>
             <Select
               value={selectedCompany?.toString() || "all"}
               onValueChange={(value) => onCompanyChange(value === "all" ? null : parseInt(value))}
@@ -150,17 +152,17 @@ export const VehicleFiltersPanel = ({
                 {loadingCompanies ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>Carregando...</span>
+                    <span>{t('common.loading')}</span>
                   </>
                 ) : (
-                  <SelectValue placeholder="Todas as empresas" />
+                  <SelectValue placeholder={t('dashboard.filters.allCompanies')} />
                 )}
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as empresas</SelectItem>
+                <SelectItem value="all">{t('dashboard.filters.allCompanies')}</SelectItem>
                 {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id.toString()}>
-                    {company.nome || `Empresa ${company.id}`}
+                    {company.nome || `${t('dashboard.filters.company')} ${company.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -169,7 +171,7 @@ export const VehicleFiltersPanel = ({
 
           {/* Date Range Filter */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-card-foreground">Período</label>
+            <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.period')}</label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -187,7 +189,7 @@ export const VehicleFiltersPanel = ({
                       format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })
                     )
                   ) : (
-                    <span>Selecionar período</span>
+                    <span>{t('dashboard.filters.selectPeriod')}</span>
                   )}
                 </Button>
               </PopoverTrigger>

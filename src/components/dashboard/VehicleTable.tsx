@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Truck, MapPin, Clock, Gauge } from "lucide-react";
 import { useGeocoding } from "@/hooks/useGeocoding";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState, useEffect } from "react";
 
 interface VehicleTableProps {
@@ -12,17 +13,18 @@ interface VehicleTableProps {
   className?: string;
 }
 
-const getSpeedStatus = (speed?: string) => {
+const getSpeedStatus = (t: (key: string) => string, speed?: string) => {
   if (!speed) return { label: "N/A", variant: "secondary" as const, color: "text-muted-foreground" };
   
   const speedNum = parseFloat(speed);
-  if (speedNum >= 60) return { label: "Alta", variant: "destructive" as const, color: "text-destructive" };
-  if (speedNum >= 40) return { label: "Média", variant: "default" as const, color: "text-warning" };
-  if (speedNum >= 20) return { label: "Normal", variant: "secondary" as const, color: "text-success" };
-  return { label: "Baixa", variant: "outline" as const, color: "text-info" };
+  if (speedNum >= 60) return { label: t('dashboard.table.speed.high'), variant: "destructive" as const, color: "text-destructive" };
+  if (speedNum >= 40) return { label: t('dashboard.table.speed.medium'), variant: "default" as const, color: "text-warning" };
+  if (speedNum >= 20) return { label: t('dashboard.table.speed.normal'), variant: "secondary" as const, color: "text-success" };
+  return { label: t('dashboard.table.speed.low'), variant: "outline" as const, color: "text-info" };
 };
 
 export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
+  const { t } = useTranslation();
   const { getAddress } = useGeocoding();
   const [addresses, setAddresses] = useState<{ [key: string]: string }>({});
 
@@ -108,7 +110,7 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
             </thead>
             <tbody>
               {sortedVehicles.map((vehicle) => {
-                const speedStatus = getSpeedStatus(vehicle.velocidadeMedia);
+                const speedStatus = getSpeedStatus(t, vehicle.velocidadeMedia);
                 const parseDate = (dateStr: string) => {
                   const [datePart, timePart] = dateStr.split(' ');
                   const [day, month, year] = datePart.split('/');
