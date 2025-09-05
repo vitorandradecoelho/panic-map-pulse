@@ -21,9 +21,9 @@ export const fetchLines = async (): Promise<LineData[]> => {
   }
 };
 
-export const fetchCompanies = async (): Promise<CompanyData[]> => {
+export const fetchCompanies = async (clienteId: string): Promise<CompanyData[]> => {
   try {
-    const response = await api.get<CompanyData[]>(`${ApiPrefix.SERVICE_API}/empresas`);
+    const response = await api.get<CompanyData[]>(`/api/empresa/consultarPorIdCliente/${clienteId}`);
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar empresas:", error);

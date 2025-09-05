@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { fetchLines, fetchCompanies, LineData, CompanyData } from "@/services/filtersApi";
+import { getClienteLocalStorage } from "@/services/auth";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface VehicleFiltersPanelProps {
@@ -43,12 +44,13 @@ export const VehicleFiltersPanel = ({
   useEffect(() => {
     const loadFiltersData = async () => {
       try {
+        const cliente = getClienteLocalStorage();
         const [linesData, companiesData] = await Promise.all([
           fetchLines().catch(err => {
             console.error("Erro ao carregar linhas:", err);
             return [];
           }),
-          fetchCompanies().catch(err => {
+          fetchCompanies(cliente.idCliente.toString()).catch(err => {
             console.error("Erro ao carregar empresas:", err);
             return [];
           })
