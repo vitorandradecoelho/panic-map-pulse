@@ -13,7 +13,7 @@ export interface CompanyData {
 
 export const fetchLines = async (): Promise<LineData[]> => {
   try {
-    const response = await api.get<LineData[]>(`${ApiPrefix.SERVICE_API}/linhas`);
+    const response = await api.get<LineData[]>(`${ApiPrefix.SERVICE_API}/linhasTrajetos/1241`);
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar linhas:", error);
