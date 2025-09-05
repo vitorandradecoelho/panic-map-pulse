@@ -164,7 +164,7 @@ const AlertsMonitoring = () => {
                   <span>Menu Principal</span>
                 </Button>
                 <Button
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => navigate("/dashboardPanico")}
                   className="flex items-center space-x-2"
                 >
                   <Truck className="h-4 w-4" />

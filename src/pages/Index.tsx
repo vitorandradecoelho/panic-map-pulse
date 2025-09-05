@@ -17,7 +17,7 @@ const Index = () => {
 
         {/* Menu Cards */}
         <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-          <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/dashboard")}>
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/dashboardPanico")}>
             <CardHeader className="text-center pb-4">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <Truck className="h-8 w-8 text-primary" />
