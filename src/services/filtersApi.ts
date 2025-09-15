@@ -1,5 +1,6 @@
 import api from "./api";
 import { ApiPrefix } from "../m2mconfig";
+import { getClienteLocalStorage } from "./auth";
 
 export interface LineData {
   id: string;
@@ -13,8 +14,11 @@ export interface CompanyData {
 
 export const fetchLines = async (): Promise<LineData[]> => {
   try {
-    console.log("🔄 Fazendo chamada para /linhasTrajetos/1241...");
-    const response = await api.get<LineData[]>(`${ApiPrefix.SERVICE_API}/linhasTrajetos/1241`);
+    const cliente = getClienteLocalStorage();
+    const clienteId = cliente.idCliente;
+    
+    console.log(`🔄 Fazendo chamada para /linhasTrajetos/${clienteId}...`);
+    const response = await api.get<LineData[]>(`${ApiPrefix.SERVICE_API}/linhasTrajetos/${clienteId}`);
     console.log("✅ Linhas obtidas da API:", response.data);
     return response.data;
   } catch (error) {
