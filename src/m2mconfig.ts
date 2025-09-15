@@ -28,10 +28,12 @@ const getZoneValue = (): string => {
     if (matcher && matcher[0]) {
       ZONE = matcher[0];
     } else {
-      console.warn("Nenhuma zona correspondente encontrada na origem:", origin);
+      console.warn("Nenhuma zona correspondente encontrada na origem:", origin, "- usando padrão zn0");
+      ZONE = "zn0";
     }
   } catch (error) {
-    console.warn("Erro ao tentar obter a origem do parent:", error);
+    console.warn("Erro ao tentar obter a origem do parent:", error, "- usando padrão zn0");
+    ZONE = "zn0";
   }
 
   console.log("🔍 Zone obtida do fallback:", ZONE);
