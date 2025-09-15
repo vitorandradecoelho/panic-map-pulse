@@ -44,6 +44,8 @@ export const initGetLocalStorage = async (
   urlToken?: string | null,
   urlZone?: string | null
 ): Promise<boolean> => {
+  console.log("🔄 Iniciando autenticação...");
+  
   const params = new URLSearchParams(window.location.search);
 
   if (!urlToken) {
@@ -54,27 +56,35 @@ export const initGetLocalStorage = async (
     urlZone = params.get("zn");
   }
 
+  console.log("📋 Parâmetros da URL:", { token: urlToken ? "PRESENTE" : "AUSENTE", zone: urlZone });
+
   if (urlToken) {
     token = urlToken;
     localStorage.setItem("token", token);
+    console.log("✅ Token salvo no localStorage");
   } else {
     token = localStorage.getItem("token");
+    console.log("📦 Token recuperado do localStorage:", token ? "PRESENTE" : "AUSENTE");
   }
 
   if (urlZone) {
     sessionStorage.setItem("zn", urlZone);
     localStorage.setItem("zone", urlZone);
+    console.log("✅ Zone salva:", urlZone);
   }
 
   if (!token) {
-    console.warn("No token available - running in demo mode");
+    console.warn("⚠️ Nenhum token disponível - executando em modo demo");
     return false;
   }
 
   try {
+    console.log("🌐 Fazendo chamada para /user/data...");
     const response = await api.get<IUserDataResponse>(
       `${ApiPrefix.SERVICE_API}/user/data`
     );
+
+    console.log("✅ Resposta da API user/data:", response.data);
 
     language = languageToUpper(response.data.conf?.lang) || "pt-BR";
     cliente.idCliente = response.data.cli?.id || 0;
@@ -90,8 +100,15 @@ export const initGetLocalStorage = async (
 
     cliente.inicioDiaOperacional = chaveDiaOperacional?.valor || "00:00:00";
 
+    console.log("👤 Dados do cliente carregados:", {
+      idCliente: cliente.idCliente,
+      nomeUsuario: cliente.nomeUsuario,
+      empresas: cliente.empresas
+    });
+
     return true;
   } catch (error) {
+    console.error("❌ Erro na autenticação:", error);
     throw error;
   }
 };

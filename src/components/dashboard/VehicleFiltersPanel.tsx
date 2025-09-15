@@ -43,36 +43,52 @@ export const VehicleFiltersPanel = ({
 
   useEffect(() => {
     const loadFiltersData = async () => {
+      console.log("🔄 Iniciando carregamento dos filtros...");
+      
       try {
         const cliente = getClienteLocalStorage();
+        console.log("👤 Cliente obtido:", {
+          idCliente: cliente.idCliente,
+          empresas: cliente.empresas
+        });
         
         // Only try to fetch if we have a valid client ID
         if (cliente.idCliente && cliente.idCliente > 0) {
+          console.log("🌐 Fazendo chamadas para linhas e empresas...");
+          
           const [linesData, companiesData] = await Promise.all([
-            fetchLines().catch(err => {
-              console.error("Erro ao carregar linhas:", err);
+            fetchLines().then(data => {
+              console.log("✅ Linhas carregadas:", data);
+              return data;
+            }).catch(err => {
+              console.error("❌ Erro ao carregar linhas:", err);
               return [];
             }),
-            fetchCompanies(cliente.idCliente.toString()).catch(err => {
-              console.error("Erro ao carregar empresas:", err);
+            fetchCompanies(cliente.idCliente.toString()).then(data => {
+              console.log("✅ Empresas carregadas:", data);
+              return data;
+            }).catch(err => {
+              console.error("❌ Erro ao carregar empresas:", err);
               return [];
             })
           ]);
           
           setLines(Array.isArray(linesData) ? linesData : []);
           setCompanies(Array.isArray(companiesData) ? companiesData : []);
+          console.log("✅ Filtros configurados com sucesso");
         } else {
-          console.warn("Cliente ID not available - using empty filters");
+          console.warn("⚠️ Cliente ID não disponível - usando filtros vazios");
           setLines([]);
           setCompanies([]);
         }
       } catch (error) {
-        console.error("Erro ao carregar dados dos filtros:", error);
+        console.error("❌ Erro ao carregar dados dos filtros:", error);
         setLines([]);
         setCompanies([]);
       } finally {
         setLoadingLines(false);
         setLoadingCompanies(false);
+        console.log("🏁 Carregamento dos filtros finalizado");
       }
     };
 
