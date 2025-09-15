@@ -32,7 +32,7 @@ const getZoneValue = (): string => {
   }
 
   // Fallback para lógica original
-  let ZONE = "zn4"; // valor por defeito alterado para zn4
+  let ZONE = "zn0"; // valor por defeito
   let origin = "https://dashboard-mobile.sinopticoplus.com/";
   let matcher: RegExpMatchArray | null = null;
 
