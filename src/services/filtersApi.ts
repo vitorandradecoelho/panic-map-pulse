@@ -1,6 +1,7 @@
 import api from "./api";
 import { ApiPrefix } from "../m2mconfig";
 import { getClienteLocalStorage } from "./auth";
+import { getZoneFromStorage } from "./auth";
 
 export interface LineData {
   id: string;
@@ -31,8 +32,11 @@ export const fetchLines = async (): Promise<LineData[]> => {
 
 export const fetchCompanies = async (clienteId: string): Promise<CompanyData[]> => {
   try {
-    console.log(`🔄 Fazendo chamada para /api/empresa/consultarPorIdCliente/${clienteId}...`);
-    const response = await api.get<CompanyData[]>(`/api/empresa/consultarPorIdCliente/${clienteId}`);
+    // URL específica para empresas usando sinopticoplus.com
+    const empresaUrl = `https://${getZoneFromStorage() || 'zn0'}.sinopticoplus.com/api/empresa/consultarPorIdCliente/${clienteId}`;
+    console.log(`🔄 Fazendo chamada para empresas: ${empresaUrl}`);
+    
+    const response = await api.get<CompanyData[]>(empresaUrl);
     console.log("✅ Empresas obtidas da API:", response.data);
     return response.data;
   } catch (error) {
