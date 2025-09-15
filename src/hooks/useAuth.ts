@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   initializeAuth, 
   isAuthenticated, 
@@ -51,55 +51,50 @@ export const useAuth = (): UseAuthReturn => {
     };
   }, []);
 
-  const login = async (token?: string, zone?: string): Promise<boolean> => {
+  const login = useCallback(async (token?: string, zone?: string): Promise<boolean> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      
       const success = await initializeAuth(token, zone);
-      
       setAuthState(getAuthState());
       setCliente(getClienteLocalStorage());
-      
       return success;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro na autenticação';
-      setAuthState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
         error: errorMessage,
-        isAuthenticated: false 
+        isAuthenticated: false
       }));
       return false;
     }
-  };
+  }, []);
 
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     authLogout();
     setAuthState(getAuthState());
     setCliente(getClienteLocalStorage());
-  };
+  }, []);
 
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      
       await refreshUserData();
-      
       setAuthState(getAuthState());
       setCliente(getClienteLocalStorage());
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar dados';
-      setAuthState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        error: errorMessage 
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage
       }));
     }
-  };
+  }, []);
 
-  const clearError = (): void => {
+  const clearError = useCallback((): void => {
     setAuthState(prev => ({ ...prev, error: null }));
-  };
+  }, []);
 
   return {
     isAuthenticated: authState.isAuthenticated,
