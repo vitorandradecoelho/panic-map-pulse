@@ -5,11 +5,13 @@ import { getClienteLocalStorage } from "./auth";
 export interface LineData {
   id: string;
   nome: string;
+  descr: string;
 }
 
 export interface CompanyData {
   id: number;
   nome: string;
+  descr: string;
 }
 
 export const fetchLines = async (): Promise<LineData[]> => {

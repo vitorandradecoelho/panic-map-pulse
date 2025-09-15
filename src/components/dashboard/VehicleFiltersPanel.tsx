@@ -161,7 +161,7 @@ export const VehicleFiltersPanel = ({
                 <SelectItem value="all">{t('dashboard.filters.allLines')}</SelectItem>
                 {lines.map((line) => (
                   <SelectItem key={line.id} value={line.id}>
-                    {t('dashboard.filters.line')} {line.nome || line.id}
+                    {line.descr || line.nome || line.id}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -190,7 +190,7 @@ export const VehicleFiltersPanel = ({
                 <SelectItem value="all">{t('dashboard.filters.allCompanies')}</SelectItem>
                 {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id.toString()}>
-                    {company.nome || `${t('dashboard.filters.company')} ${company.id}`}
+                    {company.descr || company.nome || `${t('dashboard.filters.company')} ${company.id}`}
                   </SelectItem>
                 ))}
               </SelectContent>
