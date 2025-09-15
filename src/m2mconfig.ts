@@ -43,7 +43,7 @@ const getZoneValue = (): string => {
 // Função para construir as URLs dinamicamente
 const buildApiUrls = (zoneValue: string) => {
   const SERVICE_API_HOST = `https://${zoneValue}.m2mcontrol.com.br`;
-  const DASHBOARD_API_HOST = `${urlFila}`;
+  const DASHBOARD_API_HOST = `https://${zoneValue}.m2mcontrol.com.br`;
   const SERVICE = `https://${zoneValue}.m2mcontrol.com.br/api/controlePartida`;
   const VIAGEM_PLANEJAMENTO_API_HOST = zoneValue.includes("0")
       ? `https://planejamento-viagem-api-hmg.m2mcontrol.com.br`
