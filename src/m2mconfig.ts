@@ -6,16 +6,6 @@ const urlFila = "";
 
 // Função para obter a zone da URL ou fallback
 const getZoneValue = (): string => {
-  // Primeiro, verifica parâmetros da URL
-  const params = new URLSearchParams(window.location.search);
-  const urlZone = params.get("zn");
-  if (urlZone) {
-    const zoneWithPrefix = urlZone.startsWith("zn") ? urlZone : `zn${urlZone}`;
-    console.log("🔍 Zone obtida da URL:", urlZone, "-> formatada:", zoneWithPrefix);
-    return zoneWithPrefix;
-  }
-
-  // Fallback para lógica original
   let ZONE = "zn0"; // valor por defeito
   let origin = "https://dashboard-mobile.sinopticoplus.com/";
   let matcher: RegExpMatchArray | null = null;
@@ -27,6 +17,8 @@ const getZoneValue = (): string => {
 
     if (matcher && matcher[0]) {
       ZONE = matcher[0];
+      console.log("🔍 Zone obtida do ancestorOrigins:", ZONE);
+      return ZONE;
     } else {
       console.warn("Nenhuma zona correspondente encontrada na origem:", origin, "- usando padrão zn0");
       ZONE = "zn0";
@@ -36,7 +28,7 @@ const getZoneValue = (): string => {
     ZONE = "zn0";
   }
 
-  console.log("🔍 Zone obtida do fallback:", ZONE);
+  console.log("🔍 Zone final (fallback):", ZONE);
   return ZONE;
 };
 
