@@ -71,6 +71,10 @@ export const initGetLocalStorage = async (
     sessionStorage.setItem("zn", urlZone);
     localStorage.setItem("zone", urlZone);
     console.log("✅ Zone salva:", urlZone);
+    
+    // Atualizar URLs da API com a nova zone
+    const { updateApiUrls } = await import("../m2mconfig");
+    updateApiUrls(urlZone);
   }
 
   if (!token) {
