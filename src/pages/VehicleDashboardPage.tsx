@@ -4,8 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { Shield, Home } from "lucide-react";
 
 const VehicleDashboardPage = () => {
+  console.log("🚗 VehicleDashboardPage: Componente iniciado");
+  
   const navigate = useNavigate();
+  console.log("🚗 VehicleDashboardPage: useNavigate inicializado");
 
+  console.log("🚗 VehicleDashboardPage: Renderizando componente...");
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
       {/* Navigation Header */}

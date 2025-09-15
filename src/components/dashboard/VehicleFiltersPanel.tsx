@@ -43,55 +43,56 @@ export const VehicleFiltersPanel = ({
 
   useEffect(() => {
     const loadFiltersData = async () => {
-      console.log("🔄 Iniciando carregamento dos filtros...");
+      console.log("🔄 VehicleFiltersPanel: Iniciando carregamento dos filtros...");
       
       try {
         const cliente = getClienteLocalStorage();
-        console.log("👤 Cliente obtido:", {
+        console.log("👤 VehicleFiltersPanel: Cliente obtido:", {
           idCliente: cliente.idCliente,
           empresas: cliente.empresas
         });
         
         // Only try to fetch if we have a valid client ID
         if (cliente.idCliente && cliente.idCliente > 0) {
-          console.log("🌐 Fazendo chamadas para linhas e empresas...");
+          console.log("🌐 VehicleFiltersPanel: Cliente válido - fazendo chamadas para linhas e empresas...");
           
           const [linesData, companiesData] = await Promise.all([
             fetchLines().then(data => {
-              console.log("✅ Linhas carregadas:", data);
+              console.log("✅ VehicleFiltersPanel: Linhas carregadas:", data);
               return data;
             }).catch(err => {
-              console.error("❌ Erro ao carregar linhas:", err);
+              console.error("❌ VehicleFiltersPanel: Erro ao carregar linhas:", err);
               return [];
             }),
             fetchCompanies(cliente.idCliente.toString()).then(data => {
-              console.log("✅ Empresas carregadas:", data);
+              console.log("✅ VehicleFiltersPanel: Empresas carregadas:", data);
               return data;
             }).catch(err => {
-              console.error("❌ Erro ao carregar empresas:", err);
+              console.error("❌ VehicleFiltersPanel: Erro ao carregar empresas:", err);
               return [];
             })
           ]);
           
           setLines(Array.isArray(linesData) ? linesData : []);
           setCompanies(Array.isArray(companiesData) ? companiesData : []);
-          console.log("✅ Filtros configurados com sucesso");
+          console.log("✅ VehicleFiltersPanel: Filtros configurados com sucesso");
         } else {
-          console.warn("⚠️ Cliente ID não disponível - usando filtros vazios");
+          console.warn("⚠️ VehicleFiltersPanel: Cliente ID não disponível - usando filtros vazios");
           setLines([]);
           setCompanies([]);
         }
       } catch (error) {
-        console.error("❌ Erro ao carregar dados dos filtros:", error);
+        console.error("❌ VehicleFiltersPanel: Erro ao carregar dados dos filtros:", error);
         setLines([]);
         setCompanies([]);
       } finally {
         setLoadingLines(false);
         setLoadingCompanies(false);
-        console.log("🏁 Carregamento dos filtros finalizado");
+        console.log("🏁 VehicleFiltersPanel: Carregamento dos filtros finalizado");
       }
     };
 
+    console.log("🔄 VehicleFiltersPanel: useEffect disparado, iniciando loadFiltersData...");
     loadFiltersData();
   }, []);
 
