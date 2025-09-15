@@ -4,7 +4,7 @@
 
 const urlFila = "";
 
-// Função para obter a zone da URL, sessão ou localStorage
+// Função para obter a zone da URL ou fallback
 const getZoneValue = (): string => {
   // Primeiro, verifica parâmetros da URL
   const params = new URLSearchParams(window.location.search);
@@ -12,22 +12,6 @@ const getZoneValue = (): string => {
   if (urlZone) {
     const zoneWithPrefix = urlZone.startsWith("zn") ? urlZone : `zn${urlZone}`;
     console.log("🔍 Zone obtida da URL:", urlZone, "-> formatada:", zoneWithPrefix);
-    return zoneWithPrefix;
-  }
-
-  // Segundo, verifica sessão
-  const sessionZone = sessionStorage.getItem("zn");
-  if (sessionZone) {
-    const zoneWithPrefix = sessionZone.startsWith("zn") ? sessionZone : `zn${sessionZone}`;
-    console.log("🔍 Zone obtida da sessão:", sessionZone, "-> formatada:", zoneWithPrefix);
-    return zoneWithPrefix;
-  }
-
-  // Terceiro, verifica localStorage
-  const localZone = localStorage.getItem("zone");
-  if (localZone) {
-    const zoneWithPrefix = localZone.startsWith("zn") ? localZone : `zn${localZone}`;
-    console.log("🔍 Zone obtida do localStorage:", localZone, "-> formatada:", zoneWithPrefix);
     return zoneWithPrefix;
   }
 
