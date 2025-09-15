@@ -45,8 +45,11 @@ export const initGetLocalStorage = async (
   urlZone?: string | null
 ): Promise<boolean> => {
   console.log("🔄 Iniciando autenticação...");
+  console.log("🔍 URL atual:", window.location.href);
+  console.log("🔍 Search params:", window.location.search);
   
   const params = new URLSearchParams(window.location.search);
+  console.log("🔍 Todos os parâmetros:", Array.from(params.entries()));
 
   if (!urlToken) {
     urlToken = params.get("token");
@@ -56,7 +59,11 @@ export const initGetLocalStorage = async (
     urlZone = params.get("zn");
   }
 
-  console.log("📋 Parâmetros da URL:", { token: urlToken ? "PRESENTE" : "AUSENTE", zone: urlZone });
+  console.log("📋 Parâmetros da URL:", { 
+    token: urlToken ? "PRESENTE" : "AUSENTE", 
+    zone: urlZone,
+    tokenLength: urlToken?.length || 0 
+  });
 
   if (urlToken) {
     token = urlToken;
@@ -84,6 +91,7 @@ export const initGetLocalStorage = async (
 
   try {
     console.log("🌐 Fazendo chamada para /user/data...");
+    console.log("🔗 URL final que será chamada:", `${ApiPrefix.SERVICE_API}/user/data`);
     const response = await api.get<IUserDataResponse>(
       `${ApiPrefix.SERVICE_API}/user/data`
     );
