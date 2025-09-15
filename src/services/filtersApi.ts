@@ -32,8 +32,10 @@ export const fetchLines = async (): Promise<LineData[]> => {
 
 export const fetchCompanies = async (clienteId: string): Promise<CompanyData[]> => {
   try {
-    // URL específica para empresas usando sinopticoplus.com
-    const empresaUrl = `https://${getZoneFromStorage() || 'zn0'}.sinopticoplus.com/api/empresa/consultarPorIdCliente/${clienteId}`;
+    // Garantir que a zona tenha o prefixo "zn"
+    const zone = getZoneFromStorage() || '0';
+    const zoneWithPrefix = zone.startsWith('zn') ? zone : `zn${zone}`;
+    const empresaUrl = `https://${zoneWithPrefix}.sinopticoplus.com/api/empresa/consultarPorIdCliente/${clienteId}`;
     console.log(`🔄 Fazendo chamada para empresas: ${empresaUrl}`);
     
     const response = await api.get<CompanyData[]>(empresaUrl);
