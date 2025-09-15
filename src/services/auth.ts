@@ -67,7 +67,8 @@ export const initGetLocalStorage = async (
   }
 
   if (!token) {
-    throw new Error("No token available");
+    console.warn("No token available - running in demo mode");
+    return false;
   }
 
   try {

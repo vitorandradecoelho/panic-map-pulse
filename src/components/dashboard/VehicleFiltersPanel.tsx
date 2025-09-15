@@ -45,21 +45,31 @@ export const VehicleFiltersPanel = ({
     const loadFiltersData = async () => {
       try {
         const cliente = getClienteLocalStorage();
-        const [linesData, companiesData] = await Promise.all([
-          fetchLines().catch(err => {
-            console.error("Erro ao carregar linhas:", err);
-            return [];
-          }),
-          fetchCompanies(cliente.idCliente.toString()).catch(err => {
-            console.error("Erro ao carregar empresas:", err);
-            return [];
-          })
-        ]);
         
-        setLines(linesData);
-        setCompanies(companiesData);
+        // Only try to fetch if we have a valid client ID
+        if (cliente.idCliente && cliente.idCliente > 0) {
+          const [linesData, companiesData] = await Promise.all([
+            fetchLines().catch(err => {
+              console.error("Erro ao carregar linhas:", err);
+              return [];
+            }),
+            fetchCompanies(cliente.idCliente.toString()).catch(err => {
+              console.error("Erro ao carregar empresas:", err);
+              return [];
+            })
+          ]);
+          
+          setLines(Array.isArray(linesData) ? linesData : []);
+          setCompanies(Array.isArray(companiesData) ? companiesData : []);
+        } else {
+          console.warn("Cliente ID not available - using empty filters");
+          setLines([]);
+          setCompanies([]);
+        }
       } catch (error) {
         console.error("Erro ao carregar dados dos filtros:", error);
+        setLines([]);
+        setCompanies([]);
       } finally {
         setLoadingLines(false);
         setLoadingCompanies(false);

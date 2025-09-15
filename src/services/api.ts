@@ -20,7 +20,7 @@ api.interceptors.response.use(
       // Token expired or invalid
       localStorage.removeItem("token");
       sessionStorage.removeItem("zn");
-      window.location.href = "/login"; // Redirect to login if you have one
+      console.warn("Authentication failed - running in demo mode");
     }
     return Promise.reject(error);
   }

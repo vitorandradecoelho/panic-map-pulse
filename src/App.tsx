@@ -17,7 +17,10 @@ const App = () => {
     // Inicializar dados do usuário na abertura da aplicação
     const initializeApp = async () => {
       try {
-        await initGetLocalStorage();
+        const initialized = await initGetLocalStorage();
+        if (!initialized) {
+          console.log("Running in demo mode without authentication");
+        }
       } catch (error) {
         console.error("Erro ao inicializar dados do usuário:", error);
       }
