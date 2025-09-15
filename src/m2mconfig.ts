@@ -10,22 +10,25 @@ const getZoneValue = (): string => {
   const params = new URLSearchParams(window.location.search);
   const urlZone = params.get("zn");
   if (urlZone) {
-    console.log("🔍 Zone obtida da URL:", urlZone);
-    return urlZone;
+    const zoneWithPrefix = urlZone.startsWith("zn") ? urlZone : `zn${urlZone}`;
+    console.log("🔍 Zone obtida da URL:", urlZone, "-> formatada:", zoneWithPrefix);
+    return zoneWithPrefix;
   }
 
   // Segundo, verifica sessão
   const sessionZone = sessionStorage.getItem("zn");
   if (sessionZone) {
-    console.log("🔍 Zone obtida da sessão:", sessionZone);
-    return sessionZone;
+    const zoneWithPrefix = sessionZone.startsWith("zn") ? sessionZone : `zn${sessionZone}`;
+    console.log("🔍 Zone obtida da sessão:", sessionZone, "-> formatada:", zoneWithPrefix);
+    return zoneWithPrefix;
   }
 
   // Terceiro, verifica localStorage
   const localZone = localStorage.getItem("zone");
   if (localZone) {
-    console.log("🔍 Zone obtida do localStorage:", localZone);
-    return localZone;
+    const zoneWithPrefix = localZone.startsWith("zn") ? localZone : `zn${localZone}`;
+    console.log("🔍 Zone obtida do localStorage:", localZone, "-> formatada:", zoneWithPrefix);
+    return zoneWithPrefix;
   }
 
   // Fallback para lógica original

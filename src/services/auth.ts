@@ -75,13 +75,15 @@ export const initGetLocalStorage = async (
   }
 
   if (urlZone) {
+    // Salvar a zone original (sem prefixo) na sessão
     sessionStorage.setItem("zn", urlZone);
     localStorage.setItem("zone", urlZone);
     console.log("✅ Zone salva:", urlZone);
     
-    // Atualizar URLs da API com a nova zone
+    // Atualizar URLs da API com a nova zone (será formatada no m2mconfig)
     const { updateApiUrls } = await import("../m2mconfig");
-    updateApiUrls(urlZone);
+    const zoneWithPrefix = urlZone.startsWith("zn") ? urlZone : `zn${urlZone}`;
+    updateApiUrls(zoneWithPrefix);
   }
 
   if (!token) {
