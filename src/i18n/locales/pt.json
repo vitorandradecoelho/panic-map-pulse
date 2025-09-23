@@ -23,7 +23,9 @@
       "allLines": "Todas as linhas",
       "allCompanies": "Todas as empresas",
       "selectPeriod": "Selecionar período",
-      "clear": "Limpar"
+      "clear": "Limpar",
+      "searchLine": "Buscar linha...",
+      "noLineFound": "Nenhuma linha encontrada."
     },
     "kpis": {
       "totalVehicles": "Total de Veículos",
@@ -51,6 +53,11 @@
         "normal": "Normal",
         "low": "Baixa"
       }
+    },
+    "topLines": {
+      "title": "Top Linhas",
+      "noData": "Nenhum evento de pânico encontrado",
+      "footer": "Baseado nos eventos de pânico registrados no período selecionado"
     }
   },
   "alerts": {

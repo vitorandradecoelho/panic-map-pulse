@@ -23,7 +23,9 @@
       "allLines": "All lines",
       "allCompanies": "All companies",
       "selectPeriod": "Select period",
-      "clear": "Clear"
+      "clear": "Clear",
+      "searchLine": "Search line...",
+      "noLineFound": "No line found."
     },
     "kpis": {
       "totalVehicles": "Total Vehicles",
@@ -51,6 +53,11 @@
         "normal": "Normal",
         "low": "Low"
       }
+    },
+    "topLines": {
+      "title": "Top Lines",
+      "noData": "No panic events found",
+      "footer": "Based on panic events recorded in the selected period"
     }
   },
   "alerts": {
