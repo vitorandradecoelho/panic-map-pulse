@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Filter, X, Loader2 } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CalendarIcon, Filter, X, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -40,6 +42,7 @@ export const VehicleFiltersPanel = ({
   const [companies, setCompanies] = useState<CompanyData[]>([]);
   const [loadingLines, setLoadingLines] = useState(true);
   const [loadingCompanies, setLoadingCompanies] = useState(true);
+  const [openLineCombo, setOpenLineCombo] = useState(false);
 
   useEffect(() => {
     const loadFiltersData = async () => {
@@ -140,33 +143,77 @@ export const VehicleFiltersPanel = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Line Filter */}
+          {/* Line Filter - Searchable Combobox */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.line')}</label>
-            <Select
-              value={selectedLine || "all"}
-              onValueChange={(value) => onLineChange(value === "all" ? null : value)}
-              disabled={loadingLines}
-            >
-              <SelectTrigger className="bg-background border-border">
-                {loadingLines ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>{t('common.loading')}</span>
-                  </>
-                ) : (
-                  <SelectValue placeholder={t('dashboard.filters.allLines')} />
-                )}
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('dashboard.filters.allLines')}</SelectItem>
-                {lines.map((line) => (
-                  <SelectItem key={line.id} value={line.id}>
-                    {line.descr || line.nome || line.id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openLineCombo} onOpenChange={setOpenLineCombo}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openLineCombo}
+                  className="w-full justify-between bg-background border-border"
+                  disabled={loadingLines}
+                >
+                  {loadingLines ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span>{t('common.loading')}</span>
+                    </>
+                  ) : selectedLine ? (
+                    lines.find((line) => line.id === selectedLine)?.descr || 
+                    lines.find((line) => line.id === selectedLine)?.nome || 
+                    selectedLine
+                  ) : (
+                    t('dashboard.filters.allLines')
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder={t('dashboard.filters.searchLine') || 'Buscar linha...'} />
+                  <CommandList>
+                    <CommandEmpty>{t('dashboard.filters.noLineFound') || 'Nenhuma linha encontrada.'}</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="all"
+                        onSelect={() => {
+                          onLineChange(null);
+                          setOpenLineCombo(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedLine === null ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {t('dashboard.filters.allLines')}
+                      </CommandItem>
+                      {lines.map((line) => (
+                        <CommandItem
+                          key={line.id}
+                          value={line.id}
+                          onSelect={(currentValue) => {
+                            onLineChange(currentValue === selectedLine ? null : currentValue);
+                            setOpenLineCombo(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedLine === line.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {line.descr || line.nome || line.id}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Company Filter */}

@@ -4,6 +4,7 @@ import { VehicleFiltersPanel } from "@/components/dashboard/VehicleFiltersPanel"
 import { VehicleTable } from "@/components/dashboard/VehicleTable";
 import { HeatMap } from "@/components/dashboard/HeatMap";
 import { KPICard } from "@/components/dashboard/KPICard";
+import { TopLinesKPI } from "@/components/dashboard/TopLinesKPI";
 import { Header } from "@/components/layout/Header";
 import { Truck, MapPin, Gauge, Building, TrendingUp, Clock } from "lucide-react";
 import { format } from "date-fns";
@@ -152,6 +153,11 @@ const VehicleDashboard = () => {
             trendValue="0"
             className="bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 border-cyan-500/20"
           />
+        </div>
+
+        {/* Top Lines KPI */}
+        <div className="mb-8">
+          <TopLinesKPI vehicles={filteredVehicles} />
         </div>
 
         {/* Heat Map */}
