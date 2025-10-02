@@ -1,10 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Shield, Truck, BarChart3 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useEffect } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Handle query string redirection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const page = urlParams.get('pg');
+
+    if (page) {
+      // Map page codes to actual routes
+      const pageRoutes = {
+        'dashboardPanico': '/dashboardPanico',
+        'alertas': '/alertas'
+      };
+
+      const targetRoute = pageRoutes[page as keyof typeof pageRoutes];
+      if (targetRoute) {
+        // Remove 'pg' parameter and keep all others
+        urlParams.delete('pg');
+        const remainingParams = urlParams.toString();
+        const finalRoute = remainingParams ? `${targetRoute}?${remainingParams}` : targetRoute;
+
+        console.log(`🔄 Redirecionando para: ${finalRoute}`);
+        navigate(finalRoute);
+      }
+    }
+  }, [location.search, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 flex items-center justify-center">

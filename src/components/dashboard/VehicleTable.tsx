@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 interface VehicleTableProps {
   vehicles: VehicleData[];
   className?: string;
+  isLoading?: boolean;
 }
 
 const getSpeedStatus = (t: (key: string) => string, speed?: string) => {
@@ -23,7 +24,7 @@ const getSpeedStatus = (t: (key: string) => string, speed?: string) => {
   return { label: t('dashboard.table.speed.low'), variant: "outline" as const, color: "text-info" };
 };
 
-export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
+export const VehicleTable = ({ vehicles, className, isLoading = false }: VehicleTableProps) => {
   const { t } = useTranslation();
   const { getAddress } = useGeocoding();
   const [addresses, setAddresses] = useState<{ [key: string]: string }>({});
@@ -43,7 +44,7 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
     const loadAddresses = async () => {
       const newAddresses: { [key: string]: string } = {};
       
-      for (const vehicle of sortedVehicles.slice(0, 50)) { // Limit to first 50 for performance
+      for (const vehicle of sortedVehicles.slice(0, 500)) { // Limit to first 50 for performance
         const lat = vehicle.gps.coordinates[1];
         const lng = vehicle.gps.coordinates[0];
         const key = vehicle._id;
@@ -70,9 +71,9 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
     <Card className={`backdrop-blur-sm bg-card/80 border ${className}`}>
       <div className="p-6">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-card-foreground">Veículos Monitorados</h3>
+          <h3 className="text-lg font-semibold text-card-foreground">Eventos de Pânico</h3>
           <p className="text-sm text-muted-foreground">
-            {vehicles.length} veículo{vehicles.length !== 1 ? 's' : ''} em tempo real
+            {isLoading ? "Carregando..." : `${vehicles.length} evento${vehicles.length !== 1 ? 's' : ''} detectado${vehicles.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         
@@ -86,6 +87,7 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                     <span>Veículo</span>
                   </div>
                 </th>
+                <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Evento</th>
                 <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
@@ -99,7 +101,6 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                   </div>
                 </th>
                 <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Linha</th>
-                <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Motorista</th>
                 <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">
                   <div className="flex items-center space-x-2">
                     <Gauge className="h-4 w-4" />
@@ -122,8 +123,28 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                   <tr key={vehicle._id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="py-4 px-2">
                       <div className="flex flex-col">
-                        <span className="font-medium text-card-foreground">{vehicle.prefixoVeiculo}</span>
-                        <span className="text-xs text-muted-foreground">Empresa {vehicle.empresaId}</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-card-foreground">{vehicle.prefixoVeiculo}</span>
+                          {!vehicle.eventoFinalizado && (
+                            <Badge variant="destructive" className="text-xs">Ativo</Badge>
+                          )}
+                          {!vehicle.lido && (
+                            <Badge variant="secondary" className="text-xs">Novo</Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {vehicle.nomeEmpresa || `Empresa ${vehicle.empresaId}`}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-card-foreground text-sm">
+                          {vehicle.nomeAlerta || "Pânico Ativo"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {vehicle.eventoFinalizado ? "Finalizado" : "Em andamento"}
+                        </span>
                       </div>
                     </td>
                     <td className="py-4 px-2">
@@ -147,25 +168,22 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
                        </div>
                      </td>
                     <td className="py-4 px-2">
-                      <Badge variant="outline" className="font-mono">
-                        {vehicle.linha}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-2">
-                      <span className="text-sm text-card-foreground">
-                        {vehicle.motorista || "Não informado"}
-                      </span>
-                    </td>
-                    <td className="py-4 px-2">
                       <div className="flex flex-col">
-                        <Badge variant={speedStatus.variant} className="w-fit">
-                          {speedStatus.label}
+                        <Badge variant="outline" className="font-mono w-fit">
+                          {vehicle.linha}
                         </Badge>
-                        {vehicle.velocidadeMedia && (
-                          <span className="text-xs text-muted-foreground mt-1">
-                            {parseFloat(vehicle.velocidadeMedia).toFixed(1)} km/h
+                        {vehicle.linhaDescricao && (
+                          <span className="text-xs text-muted-foreground mt-1 max-w-[150px] truncate" title={vehicle.linhaDescricao}>
+                            {vehicle.linhaDescricao}
                           </span>
                         )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      <div className="flex items-center h-full">
+                        <Badge variant={speedStatus.variant} className="w-fit">
+                          {vehicle.velocidadeMedia ? `${parseFloat(vehicle.velocidadeMedia).toFixed(1)} km/h` : speedStatus.label}
+                        </Badge>
                       </div>
                     </td>
                   </tr>
@@ -174,11 +192,21 @@ export const VehicleTable = ({ vehicles, className }: VehicleTableProps) => {
             </tbody>
           </table>
           
-          {vehicles.length === 0 && (
+          {vehicles.length === 0 && !isLoading && (
             <div className="text-center py-8">
               <div className="text-muted-foreground">
                 <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum veículo encontrado</p>
+                <p>Nenhum evento de pânico encontrado</p>
+                <p className="text-xs mt-2">Experimente ajustar os filtros de data ou linha</p>
+              </div>
+            </div>
+          )}
+          
+          {isLoading && (
+            <div className="text-center py-8">
+              <div className="text-muted-foreground">
+                <div className="animate-spin h-8 w-8 mx-auto mb-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                <p>Carregando eventos de pânico...</p>
               </div>
             </div>
           )}

@@ -1,58 +1,65 @@
 import { useState, useMemo } from "react";
-import { mockVehicleData, VehicleData, getVehiclesInDateRange } from "@/data/mockData";
+import { VehicleData } from "@/data/mockData";
 import { VehicleFiltersPanel } from "@/components/dashboard/VehicleFiltersPanel";
 import { VehicleTable } from "@/components/dashboard/VehicleTable";
 import { HeatMap } from "@/components/dashboard/HeatMap";
 import { KPICard } from "@/components/dashboard/KPICard";
-import { TopLinesKPI } from "@/components/dashboard/TopLinesKPI";
 import { Header } from "@/components/layout/Header";
-import { Truck, MapPin, Gauge, Building, TrendingUp, Clock } from "lucide-react";
+import { Truck, MapPin, Gauge, Building, TrendingUp, Clock, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTranslation } from "@/hooks/useTranslation";
+import { usePainelEventos } from "@/hooks/usePainelEventos";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const VehicleDashboard = () => {
-  console.log("🚗 VehicleDashboard: Iniciando renderização...");
-  
   const { t } = useTranslation();
-  console.log("🌐 VehicleDashboard: useTranslation inicializado");
   
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  // Define datas padrão: início = início do dia atual, fim = fim do dia atual
+  const today = new Date();
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+  
+  const [startDate, setStartDate] = useState<Date | null>(startOfDay);
+  const [endDate, setEndDate] = useState<Date | null>(endOfDay);
   const [selectedLine, setSelectedLine] = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<number | null>(null);
-  
-  console.log("🔧 VehicleDashboard: Estados inicializados");
+  const [isQueryEnabled, setIsQueryEnabled] = useState(false);
 
-  // Filter vehicles based on current filter states
-  const filteredVehicles = useMemo(() => {
-    console.log("🚗 VehicleDashboard: Calculando veículos filtrados...");
-    let filtered = mockVehicleData;
-    console.log("🚗 VehicleDashboard: Dados totais:", mockVehicleData.length, "veículos");
+  // Buscar dados da API de eventos de pânico
+  const { 
+    vehicles: apiVehicles, 
+    isLoading, 
+    error, 
+    refetch, 
+    total,
+    hasData 
+  } = usePainelEventos({
+    startDate,
+    endDate,
+    selectedLine,
+    selectedCompany,
+    enabled: isQueryEnabled
+  });
 
-    // Filter by date range
-    if (startDate || endDate) {
-      const start = startDate || new Date('2000-01-01');
-      const end = endDate || new Date('2030-12-31');
-      filtered = getVehiclesInDateRange(start, end);
-      console.log("🚗 VehicleDashboard: Filtro por data aplicado:", filtered.length, "veículos");
+  const handleSearch = (filters: {
+    start: Date | null;
+    end: Date | null;
+    line: string | null;
+    company: number | null;
+  }) => {
+    setStartDate(filters.start);
+    setEndDate(filters.end);
+    setSelectedLine(filters.line);
+    setSelectedCompany(filters.company);
+    if (!isQueryEnabled) {
+      setIsQueryEnabled(true);
     }
+  };
 
-    // Filter by line
-    if (selectedLine) {
-      filtered = filtered.filter(vehicle => vehicle.linha === selectedLine);
-      console.log("🚗 VehicleDashboard: Filtro por linha aplicado:", filtered.length, "veículos");
-    }
-
-    // Filter by company
-    if (selectedCompany) {
-      filtered = filtered.filter(vehicle => vehicle.empresaId === selectedCompany);
-      console.log("🚗 VehicleDashboard: Filtro por empresa aplicado:", filtered.length, "veículos");
-    }
-
-    console.log("🚗 VehicleDashboard: Filtros finalizados:", filtered.length, "veículos");
-    return filtered;
-  }, [startDate, endDate, selectedLine, selectedCompany]);
+  // Use API data as the primary source
+  const filteredVehicles = apiVehicles;
 
   // Calculate KPI data based on filtered vehicles
   const kpiData = useMemo(() => {
@@ -93,11 +100,6 @@ const VehicleDashboard = () => {
     };
   }, [filteredVehicles]);
 
-  const handleDateRangeChange = (start: Date | null, end: Date | null) => {
-    setStartDate(start);
-    setEndDate(end);
-  };
-
   const dateRangeText = startDate && endDate 
     ? `${format(startDate, "dd/MM/yyyy", { locale: ptBR })} - ${format(endDate, "dd/MM/yyyy", { locale: ptBR })}`
     : startDate 
@@ -108,7 +110,7 @@ const VehicleDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -118,20 +120,41 @@ const VehicleDashboard = () => {
                 {t('dashboard.title')}
               </h1>
               <p className="text-muted-foreground">
-                Monitoramento em tempo real • {dateRangeText}
+                Monitoramento em tempo real • {dateRangeText} • {total} eventos
               </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={refetch}
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <span>Atualizar</span>
+              </Button>
             </div>
           </div>
         </div>
 
+        {/* Error State */}
+        {error && (
+          <Card className="mb-8 p-6 border-destructive/50 bg-destructive/5">
+            <div className="flex items-center space-x-2 text-destructive">
+              <span className="font-medium">Erro ao carregar dados:</span>
+              <span>{error}</span>
+            </div>
+          </Card>
+        )}
+
         {/* Filters */}
         <VehicleFiltersPanel
-          onDateRangeChange={handleDateRangeChange}
-          onLineChange={setSelectedLine}
-          onCompanyChange={setSelectedCompany}
+          onSearch={handleSearch}
           selectedDateRange={{ start: startDate, end: endDate }}
           selectedLine={selectedLine}
           selectedCompany={selectedCompany}
+          isLoading={isLoading}
         />
 
         {/* KPIs */}
@@ -155,18 +178,16 @@ const VehicleDashboard = () => {
           />
         </div>
 
-        {/* Top Lines KPI */}
-        <div className="mb-8">
-          <TopLinesKPI vehicles={filteredVehicles} />
-        </div>
-
         {/* Heat Map */}
         <div className="mb-8">
           <HeatMap vehicles={filteredVehicles} />
         </div>
 
         {/* Vehicle Table */}
-        <VehicleTable vehicles={filteredVehicles} />
+        <VehicleTable 
+          vehicles={filteredVehicles} 
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

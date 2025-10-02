@@ -5,32 +5,34 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { CalendarIcon, Filter, X, Loader2, Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CalendarIcon, Filter, X, Loader2, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { fetchLines, fetchCompanies, LineData, CompanyData } from "@/services/filtersApi";
 import { getClienteLocalStorage } from "@/services/auth";
 import { useTranslation } from "@/hooks/useTranslation";
+import { toast } from "sonner";
 
 interface VehicleFiltersPanelProps {
-  onDateRangeChange: (startDate: Date | null, endDate: Date | null) => void;
-  onLineChange: (line: string | null) => void;
-  onCompanyChange: (company: number | null) => void;
+  onSearch: (filters: {
+    start: Date | null;
+    end: Date | null;
+    line: string | null;
+    company: number | null;
+  }) => void;
   selectedDateRange: { start: Date | null; end: Date | null };
   selectedLine: string | null;
   selectedCompany: number | null;
+  isLoading?: boolean;
 }
 
 export const VehicleFiltersPanel = ({
-  onDateRangeChange,
-  onLineChange,
-  onCompanyChange,
+  onSearch,
   selectedDateRange,
   selectedLine,
   selectedCompany,
+  isLoading = false,
 }: VehicleFiltersPanelProps) => {
   const { t } = useTranslation();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -38,83 +40,127 @@ export const VehicleFiltersPanel = ({
     to: selectedDateRange.end || undefined,
   });
   
+  // Local state for filters before applying them
+  const [tempSelectedLine, setTempSelectedLine] = useState<string | null>(selectedLine);
+  const [tempSelectedCompany, setTempSelectedCompany] = useState<number | null>(selectedCompany);
+  
   const [lines, setLines] = useState<LineData[]>([]);
   const [companies, setCompanies] = useState<CompanyData[]>([]);
   const [loadingLines, setLoadingLines] = useState(true);
   const [loadingCompanies, setLoadingCompanies] = useState(true);
-  const [openLineCombo, setOpenLineCombo] = useState(false);
+
+  // Atualizar dateRange quando selectedDateRange mudar
+  useEffect(() => {
+    setDateRange({
+      from: selectedDateRange.start || undefined,
+      to: selectedDateRange.end || undefined,
+    });
+  }, [selectedDateRange.start, selectedDateRange.end]);
 
   useEffect(() => {
     const loadFiltersData = async () => {
-      console.log("🔄 VehicleFiltersPanel: Iniciando carregamento dos filtros...");
-      
       try {
         const cliente = getClienteLocalStorage();
-        console.log("👤 VehicleFiltersPanel: Cliente obtido:", {
-          idCliente: cliente.idCliente,
-          empresas: cliente.empresas
-        });
         
         // Only try to fetch if we have a valid client ID
         if (cliente.idCliente && cliente.idCliente > 0) {
-          console.log("🌐 VehicleFiltersPanel: Cliente válido - fazendo chamadas para linhas e empresas...");
-          
           const [linesData, companiesData] = await Promise.all([
-            fetchLines().then(data => {
-              console.log("✅ VehicleFiltersPanel: Linhas carregadas:", data);
-              return data;
-            }).catch(err => {
-              console.error("❌ VehicleFiltersPanel: Erro ao carregar linhas:", err);
-              return [];
-            }),
-            fetchCompanies(cliente.idCliente.toString()).then(data => {
-              console.log("✅ VehicleFiltersPanel: Empresas carregadas:", data);
-              return data;
-            }).catch(err => {
-              console.error("❌ VehicleFiltersPanel: Erro ao carregar empresas:", err);
-              return [];
-            })
+            fetchLines().catch(() => []),
+            fetchCompanies(cliente.idCliente?.toString() || "0").catch(() => [])
           ]);
           
           setLines(Array.isArray(linesData) ? linesData : []);
           setCompanies(Array.isArray(companiesData) ? companiesData : []);
-          console.log("✅ VehicleFiltersPanel: Filtros configurados com sucesso");
         } else {
-          console.warn("⚠️ VehicleFiltersPanel: Cliente ID não disponível - usando filtros vazios");
           setLines([]);
           setCompanies([]);
         }
       } catch (error) {
-        console.error("❌ VehicleFiltersPanel: Erro ao carregar dados dos filtros:", error);
         setLines([]);
         setCompanies([]);
       } finally {
         setLoadingLines(false);
         setLoadingCompanies(false);
-        console.log("🏁 VehicleFiltersPanel: Carregamento dos filtros finalizado");
       }
     };
 
-    console.log("🔄 VehicleFiltersPanel: useEffect disparado, iniciando loadFiltersData...");
     loadFiltersData();
   }, []);
 
   const handleDateSelect = (range: DateRange | undefined) => {
     setDateRange(range);
-    onDateRangeChange(range?.from || null, range?.to || null);
+    // Don't apply immediately - wait for user to click "Consultar"
+  };
+
+  const handleSearch = () => {
+    // Validação 1: Verificar se a data de início foi selecionada
+    if (!dateRange?.from) {
+      toast.error("Por favor, selecione um período para a busca.", {
+        description: "É necessário definir uma data de início para consultar os eventos.",
+        style: {
+          backgroundColor: 'hsl(var(--destructive))',
+          color: 'hsl(var(--destructive-foreground))',
+          border: '1px solid hsl(var(--destructive))',
+        },
+      });
+      return;
+    }
+
+    // Calcular a diferença de dias se houver data de fim
+    const diffDays = dateRange.to
+      ? Math.ceil(Math.abs(dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    // Validação 3: Todas as linhas e empresas -> limite de 7 dias
+    if (tempSelectedLine === null && tempSelectedCompany === null) {
+      if (diffDays > 7) {
+        toast.error("Com todas as linhas e empresas, o período não pode exceder 7 dias.", {
+          description: "Por favor, selecione um filtro de linha/empresa ou reduza o período.",
+          style: {
+            backgroundColor: 'hsl(var(--destructive))',
+            color: 'hsl(var(--destructive-foreground))',
+            border: '1px solid hsl(var(--destructive))',
+          },
+        });
+        return;
+      }
+    } 
+    // Validação 2: Outros casos -> limite de 30 dias
+    else {
+      if (diffDays > 30) {
+        toast.error("O período de busca não pode ser maior que 30 dias.", {
+          description: "Por favor, selecione um intervalo de data menor.",
+          style: {
+            backgroundColor: 'hsl(var(--destructive))',
+            color: 'hsl(var(--destructive-foreground))',
+            border: '1px solid hsl(var(--destructive))',
+          },
+        });
+        return;
+      }
+    }
+
+    // Se a validação passar, realizar a busca
+    onSearch({
+      start: dateRange.from,
+      end: dateRange.to || null,
+      line: tempSelectedLine,
+      company: tempSelectedCompany,
+    });
   };
 
   const clearAllFilters = () => {
-    setDateRange(undefined);
-    onDateRangeChange(null, null);
-    onLineChange(null);
-    onCompanyChange(null);
+    const today = new Date();
+    setDateRange({ from: today, to: today });
+    setTempSelectedLine(null);
+    setTempSelectedCompany(null);
+    onSearch({ start: today, end: today, line: null, company: null });
   };
 
   const activeFiltersCount = 
-    (selectedDateRange.start || selectedDateRange.end ? 1 : 0) +
-    (selectedLine ? 1 : 0) +
-    (selectedCompany ? 1 : 0);
+    (dateRange?.from || dateRange?.to ? 1 : 0) +
+    (tempSelectedLine ? 1 : 0) +
+    (tempSelectedCompany ? 1 : 0);
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border mb-6">
@@ -143,85 +189,41 @@ export const VehicleFiltersPanel = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Line Filter - Searchable Combobox */}
+          {/* Line Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.line')}</label>
-            <Popover open={openLineCombo} onOpenChange={setOpenLineCombo}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openLineCombo}
-                  className="w-full justify-between bg-background border-border"
-                  disabled={loadingLines}
-                >
-                  {loadingLines ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span>{t('common.loading')}</span>
-                    </>
-                  ) : selectedLine ? (
-                    lines.find((line) => line.id === selectedLine)?.descr || 
-                    lines.find((line) => line.id === selectedLine)?.nome || 
-                    selectedLine
-                  ) : (
-                    t('dashboard.filters.allLines')
-                  )}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput placeholder={t('dashboard.filters.searchLine') || 'Buscar linha...'} />
-                  <CommandList>
-                    <CommandEmpty>{t('dashboard.filters.noLineFound') || 'Nenhuma linha encontrada.'}</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="all"
-                        onSelect={() => {
-                          onLineChange(null);
-                          setOpenLineCombo(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedLine === null ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {t('dashboard.filters.allLines')}
-                      </CommandItem>
-                      {lines.map((line) => (
-                        <CommandItem
-                          key={line.id}
-                          value={line.id}
-                          onSelect={(currentValue) => {
-                            onLineChange(currentValue === selectedLine ? null : currentValue);
-                            setOpenLineCombo(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedLine === line.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {line.descr || line.nome || line.id}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Select
+              value={tempSelectedLine || "all"}
+              onValueChange={(value) => setTempSelectedLine(value === "all" ? null : value)}
+              disabled={loadingLines}
+            >
+              <SelectTrigger className="bg-background border-border">
+                {loadingLines ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span>{t('common.loading')}</span>
+                  </>
+                ) : (
+                  <SelectValue placeholder={t('dashboard.filters.allLines')} />
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('dashboard.filters.allLines')}</SelectItem>
+                {lines.map((line) => (
+                  <SelectItem key={line.id} value={line.id}>
+                    {line.descr || line.nome || line.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Company Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-card-foreground">{t('dashboard.filters.company')}</label>
             <Select
-              value={selectedCompany?.toString() || "all"}
-              onValueChange={(value) => onCompanyChange(value === "all" ? null : parseInt(value))}
+              value={tempSelectedCompany?.toString() || "all"}
+              onValueChange={(value) => setTempSelectedCompany(value === "all" ? null : parseInt(value))}
               disabled={loadingCompanies}
             >
               <SelectTrigger className="bg-background border-border">
@@ -236,9 +238,11 @@ export const VehicleFiltersPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('dashboard.filters.allCompanies')}</SelectItem>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id.toString()}>
-                    {company.descr || company.nome || `${t('dashboard.filters.company')} ${company.id}`}
+                {companies
+                  .filter(company => company.empresaId != null) 
+                  .map((company) => (
+                  <SelectItem key={company.empresaId} value={company.empresaId.toString()}>
+                    {company.nomeEmpresa || company.razaoSocial || `${t('dashboard.filters.company')} ${company.empresaId}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -282,6 +286,33 @@ export const VehicleFiltersPanel = ({
               </PopoverContent>
             </Popover>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-border/50">
+          <Button
+            variant="outline"
+            onClick={clearAllFilters}
+            disabled={activeFiltersCount === 0}
+            className="text-muted-foreground hover:text-card-foreground"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Limpar Filtros
+          </Button>
+          <Button
+            onClick={handleSearch}
+            disabled={isLoading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 w-[130px]"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Search className="h-4 w-4 mr-2" />
+                Consultar
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </Card>
