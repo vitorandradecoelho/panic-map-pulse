@@ -9,7 +9,12 @@ export interface VehicleData {
   };
   motorista: string;
   linha: string;
+  linhaDescricao?: string;
   velocidadeMedia?: string;
+  nomeEmpresa?: string;
+  nomeAlerta?: string;
+  lido?: boolean;
+  eventoFinalizado?: boolean;
   panico?: boolean; // Flag para alertas de assalto
 }
 
@@ -27,7 +32,7 @@ export const mockVehicleData: VehicleData[] = [
     "linha": "810",
     "panico": true
   }, {
-    "_id": "6895fa0ad065117d9e2a40bc",
+    "_id": "6895fa0bd065117d9e2a40bd",
     "empresaId": 2040,
     "prefixoVeiculo": "30557",
     "dataTransmissaoS": "08/08/2025 10:22:15",
@@ -40,7 +45,7 @@ export const mockVehicleData: VehicleData[] = [
     "panico": true
   },
    {
-    "_id": "6895fa0ad065117d9e2a40bc",
+    "_id": "6895fa0cd065117d9e2a40be",
     "empresaId": 2040,
     "prefixoVeiculo": "30557",
     "dataTransmissaoS": "08/08/2025 10:22:15",
@@ -53,7 +58,7 @@ export const mockVehicleData: VehicleData[] = [
     "panico": true
   },
    {
-    "_id": "6895fa0ad065117d9e2a40bc",
+    "_id": "6895fa0dd065117d9e2a40bf",
     "empresaId": 2040,
     "prefixoVeiculo": "30557",
     "dataTransmissaoS": "08/08/2025 10:22:15",
@@ -80,7 +85,7 @@ export const mockVehicleData: VehicleData[] = [
     "velocidadeMedia": "19.36318407960199"
   },
    {
-    "_id": "6895fa0ad065117d9e2a40bc",
+    "_id": "6895fa0ed065117d9e2a40c0",
     "empresaId": 2040,
     "prefixoVeiculo": "30557",
     "dataTransmissaoS": "08/08/2025 10:22:15",

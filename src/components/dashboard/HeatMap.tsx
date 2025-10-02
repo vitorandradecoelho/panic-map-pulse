@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { VehicleData } from "@/data/mockData";
@@ -22,20 +22,15 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const heatmapGroup = useRef<L.LayerGroup | null>(null);
-  const markersGroup = useRef<L.LayerGroup | null>(null);
+  const markersGroup = useRef<L.FeatureGroup | null>(null);
   const circleRadiusMap = useRef<Map<L.Circle, number>>(new Map());
-  const currentZoomLevel = useRef<number>(12);
+  const [zoomLevel, setZoomLevel] = useState<number>(12);
   
   // Estado para gerenciar eventos tratados e configurações
   const [treatedEvents, setTreatedEvents] = useState<Set<string>>(new Set());
   const [intensityFilter, setIntensityFilter] = useState<'all' | 'moderate' | 'high' | 'critical'>('all');
   const [clusteringEnabled, setClusteringEnabled] = useState<boolean>(true);
   const [radiusMultiplier, setRadiusMultiplier] = useState<number>(1);
-
-  // Filter vehicles to only show panic alerts that haven't been treated
-  const panicVehicles = vehicles.filter(vehicle => 
-    vehicle.panico === true && !treatedEvents.has(vehicle._id)
-  );
 
   // Apply intensity filter
   const getIntensityLevel = (alertCount: number): string => {
@@ -62,78 +57,21 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     toast.success(`Evento do veículo ${vehiclePrefix} foi tratado e removido do mapa`, {
       description: "O alerta de pânico foi resolvido pela equipe de segurança"
     });
-    
-    // Atualizar o mapa após tratar o evento
-    setTimeout(() => {
-      addHeatMapLayer();
-      addAlertMarkers();
-    }, 100);
   };
 
-  const initializeMap = () => {
-    if (!mapContainer.current) return;
-
-    // Initialize map with OpenStreetMap
-    map.current = L.map(mapContainer.current, {
-      center: [-3.74, -38.52], // Fortaleza center (based on your coordinates)
-      zoom: 12,
-      zoomControl: true,
-    });
-
-    // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 18,
-    }).addTo(map.current);
-
-    // Initialize layer groups
-    heatmapGroup.current = L.layerGroup().addTo(map.current);
-    markersGroup.current = L.layerGroup().addTo(map.current);
-
-    // Add layers
-    addHeatMapLayer();
-    addAlertMarkers();
-
-    // Add zoom and resize event handlers
-    map.current.on('zoomend', () => {
-      const newZoom = map.current?.getZoom() || 12;
-      
-      // Only recalculate clusters if zoom level changed significantly
-      if (Math.abs(newZoom - currentZoomLevel.current) >= 1) {
-        currentZoomLevel.current = newZoom;
-        
-        // Recalculate clustering with new grid size
-        addHeatMapLayer();
-        addAlertMarkers();
-      }
-      
-      // Always invalidate size and update layer visibility
-      map.current?.invalidateSize();
-      updateLayersForZoom();
-    });
-
-    map.current.on('resize', () => {
-      // Ensure map resizes properly
-      map.current?.invalidateSize();
-    });
-
-    // Handle viewport changes
-    map.current.on('viewreset', () => {
-      map.current?.invalidateSize();
-    });
-
-    toast.success("Mapa carregado com sucesso!");
-  };
-
-  const addHeatMapLayer = () => {
+  const addHeatMapLayer = useCallback(() => {
     if (!map.current || !heatmapGroup.current) return;
+
+    const panicVehicles = vehicles.filter(vehicle => 
+      vehicle.panico === true && !treatedEvents.has(vehicle._id)
+    );
 
     // Clear existing heatmap and radius map
     heatmapGroup.current.clearLayers();
     circleRadiusMap.current.clear();
 
     // Get current zoom level for dynamic clustering
-    const currentZoom = map.current.getZoom();
+    const currentZoom = zoomLevel;
     
     if (clusteringEnabled) {
       // CLUSTERING ENABLED - Group alerts by dynamic grid
@@ -267,48 +205,35 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         heatmapGroup.current?.addLayer(heatCircle);
       });
     }
-  };
+  }, [clusteringEnabled, intensityFilter, radiusMultiplier, zoomLevel, vehicles, treatedEvents]);
 
-  const addAlertMarkers = () => {
+  const addAlertMarkers = useCallback(() => {
     if (!map.current || !markersGroup.current) return;
+
+    const panicVehicles = vehicles.filter(vehicle => 
+      vehicle.panico === true && !treatedEvents.has(vehicle._id)
+    );
 
     // Clear existing markers
     markersGroup.current.clearLayers();
 
-    // Only show individual markers at high zoom levels to avoid clutter
-    const currentZoom = map.current.getZoom();
-    if (currentZoom < 14) {
-      return; // Don't show individual markers when zoomed out
-    }
+    const currentZoom = zoomLevel;
 
+    // Use circles for individual markers to ensure they are cleared correctly
     panicVehicles.forEach(vehicle => {
       const [lng, lat] = vehicle.gps.coordinates;
       const color = 'hsl(var(--danger))'; // Using design system danger color
       
-      // Scale marker size based on zoom
-      const markerSize = Math.min(20, Math.max(12, currentZoom - 10));
-      
-      // Create custom colored marker with zoom-appropriate size
-      const customIcon = L.divIcon({
-        className: 'custom-marker',
-        html: `
-          <div style="
-            background-color: ${color};
-            width: ${markerSize}px;
-            height: ${markerSize}px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            z-index: 1000;
-          "></div>
-        `,
-        iconSize: [markerSize, markerSize],
-        iconAnchor: [markerSize/2, markerSize/2]
-      });
+      // Scale radius with zoom to mimic previous marker size behavior
+      const radius = Math.max(8, (currentZoom - 10) * 5);
 
-      const marker = L.marker([lat, lng], {
-        icon: customIcon,
-        zIndexOffset: 1000 // Ensure markers appear above heatmap
+      const circleMarker = L.circle([lat, lng], {
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.9,
+        radius: radius,
+        weight: 2,
+        opacity: 1
       });
 
       // Parse transmission date
@@ -354,9 +279,49 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
         </div>
       `;
 
-      marker.bindPopup(popupContent);
-      markersGroup.current?.addLayer(marker);
+      circleMarker.bindPopup(popupContent);
+      markersGroup.current?.addLayer(circleMarker);
     });
+
+    markersGroup.current?.bringToFront();
+  }, [zoomLevel, vehicles, treatedEvents]);
+
+  const initializeMap = () => {
+    if (!mapContainer.current) return;
+
+    // Initialize map with OpenStreetMap
+    map.current = L.map(mapContainer.current, {
+      center: [-3.74, -38.52], // Fortaleza center (based on your coordinates)
+      zoom: 12,
+      zoomControl: true,
+    });
+
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map.current);
+
+    // Initialize layer groups
+    heatmapGroup.current = L.layerGroup().addTo(map.current);
+    markersGroup.current = L.featureGroup().addTo(map.current);
+
+    // Add zoom and resize event handlers
+    map.current.on('zoomend', () => {
+      setZoomLevel(map.current?.getZoom() || 12);
+    });
+
+    map.current.on('resize', () => {
+      // Ensure map resizes properly
+      map.current?.invalidateSize();
+    });
+
+    // Handle viewport changes
+    map.current.on('viewreset', () => {
+      map.current?.invalidateSize();
+    });
+
+    toast.success("Mapa carregado com sucesso!");
   };
 
   const getPanicAlertColor = (alertCount: number): string => {
@@ -371,46 +336,12 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
     return 'Moderada';
   };
 
-  const updateLayersForZoom = () => {
-    if (!map.current) return;
-    
-    const zoom = map.current.getZoom();
-    
-    // Show/hide different elements based on zoom level
-    if (heatmapGroup.current) {
-      // Adjust circle opacity and visibility based on zoom
-      heatmapGroup.current.eachLayer((layer: any) => {
-        if (layer instanceof L.Circle) {
-          // Manter alta visibilidade em todos os zoom levels
-          const opacity = zoom >= 15 ? 0.8 : zoom >= 13 ? 0.9 : 1;
-          const fillOpacity = zoom >= 15 ? 0.6 : zoom >= 13 ? 0.7 : 0.8;
-          
-          layer.setStyle({
-            opacity: opacity,
-            fillOpacity: fillOpacity
-          });
-        }
-      });
-    }
-
-    // Update marker visibility based on zoom (handled in addAlertMarkers)
-    if (markersGroup.current) {
-      const showMarkers = zoom >= 14;
-      markersGroup.current.eachLayer((layer: any) => {
-        if (showMarkers) {
-          layer.setOpacity(1);
-        } else {
-          layer.setOpacity(0);
-        }
-      });
-    }
-  };
-
   useEffect(() => {
     initializeMap();
 
     // Expor função globalmente para ser chamada pelos popups
     (window as any).treatPanicEvent = (prefixo: string) => {
+      const panicVehicles = vehicles.filter(v => v.panico === true && !treatedEvents.has(v._id));
       const vehicle = panicVehicles.find(v => v.prefixoVeiculo === prefixo);
       if (vehicle) {
         handleTreatEvent(vehicle._id, prefixo);
@@ -433,7 +364,11 @@ export const HeatMap = ({ vehicles, className }: HeatMapProps) => {
       addHeatMapLayer();
       addAlertMarkers();
     }
-  }, [vehicles, panicVehicles, treatedEvents, intensityFilter, clusteringEnabled, radiusMultiplier]);
+  }, [addHeatMapLayer, addAlertMarkers]);
+
+  const panicVehicles = vehicles.filter(vehicle => 
+    vehicle.panico === true && !treatedEvents.has(vehicle._id)
+  );
 
   return (
     <Card className="backdrop-blur-sm bg-card/80 border overflow-hidden">
