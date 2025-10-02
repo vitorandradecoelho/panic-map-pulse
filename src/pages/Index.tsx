@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Truck, BarChart3 } from "lucide-react";
+import { Shield, Truck, BarChart3, Gauge } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
 
@@ -17,6 +17,7 @@ const Index = () => {
       // Map page codes to actual routes
       const pageRoutes = {
         'dashboardPanico': '/dashboardPanico',
+        'dashboardCAN': '/dashboardCAN',
         'alertas': '/alertas'
       };
 
@@ -43,20 +44,37 @@ const Index = () => {
         </div>
 
         {/* Menu Cards */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/dashboardPanico")}>
             <CardHeader className="text-center pb-4">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <Truck className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-xl">Dashboard de Veículos</CardTitle>
+              <CardTitle className="text-xl">Dashboard de Pânico</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground mb-4">
-                Monitore localização, status e desempenho dos veículos em tempo real
+                Monitore eventos de pânico e localização dos veículos em tempo real
               </p>
               <Button className="w-full">
                 Acessar Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/dashboardCAN")}>
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 bg-info/10 rounded-full flex items-center justify-center mb-4">
+                <Gauge className="h-8 w-8 text-info" />
+              </div>
+              <CardTitle className="text-xl">Dashboard CAN (Volvo)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Monitore RPM, torque, temperaturas e indicadores do motor
+              </p>
+              <Button className="w-full" variant="secondary">
+                Acessar CAN
               </Button>
             </CardContent>
           </Card>

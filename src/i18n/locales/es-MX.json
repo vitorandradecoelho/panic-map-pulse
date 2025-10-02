@@ -23,7 +23,8 @@
       "allLines": "Todas las líneas",
       "allCompanies": "Todas las empresas",
       "selectPeriod": "Seleccionar período",
-      "clear": "Limpiar"
+      "clear": "Limpiar",
+      "searchLine": "Buscar línea..."
     },
     "kpis": {
       "totalVehicles": "Total de Vehículos",
@@ -51,6 +52,11 @@
         "normal": "Normal",
         "low": "Baja"
       }
+    },
+    "topLines": {
+      "title": "Top Líneas",
+      "events": "eventos",
+      "noData": "No hay datos disponibles"
     }
   },
   "alerts": {
@@ -58,5 +64,64 @@
     "panic": "Pánico",
     "emergency": "Emergencia",
     "maintenance": "Mantenimiento"
+  },
+  "can": {
+    "dashboard": {
+      "title": "Tablero CAN (Volvo)",
+      "selectVehicle": "Seleccionar Vehículo"
+    },
+    "status": {
+      "engineOn": "Motor Encendido",
+      "checkEngine": "Check Engine",
+      "caution": "Precaución",
+      "alert": "Alerta",
+      "on": "ENCENDIDO",
+      "off": "APAGADO",
+      "active": "ACTIVO"
+    },
+    "gauges": {
+      "rpm": "Revoluciones Por Minuto",
+      "torque": "Torque",
+      "currentTorque": "Torque Actual",
+      "requestedTorque": "Torque Solicitado",
+      "match": "Coincidencia"
+    },
+    "temperature": {
+      "title": "Temperaturas del Motor",
+      "water": "Agua",
+      "oil": "Aceite",
+      "delta": "Delta (Aceite - Agua)",
+      "normal": "Normal",
+      "attention": "Atención",
+      "critical": "Crítico"
+    },
+    "comfort": {
+      "title": "Confort Térmico",
+      "interior": "Temperatura Interior",
+      "exterior": "Temperatura Exterior",
+      "delta": "Delta Térmico",
+      "ideal": "Ideal",
+      "hot": "Caliente",
+      "cold": "Frío",
+      "acceptable": "Aceptable"
+    },
+    "trip": {
+      "title": "KPIs del Viaje",
+      "engineTime": "Tiempo Motor Encendido",
+      "overheating": "Sobrecalentamiento",
+      "avgRPM": "RPM Promedio",
+      "maxRPM": "RPM Máximo",
+      "torqueMismatch": "Desajustes de Torque",
+      "idleTime": "Marcha Lenta",
+      "aggressive": "Eventos Agresivos",
+      "harshBraking": "Frenadas Bruscas"
+    },
+    "critical": {
+      "title": "Vehículos Críticos",
+      "vehicles": "vehículos",
+      "line": "Línea",
+      "issues": "problemas",
+      "noIssues": "No hay vehículos con problemas críticos en este momento."
+    }
   }
 }

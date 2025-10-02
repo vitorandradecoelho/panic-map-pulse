@@ -23,7 +23,8 @@
       "allLines": "Todas as linhas",
       "allCompanies": "Todas as empresas",
       "selectPeriod": "Selecionar período",
-      "clear": "Limpar"
+      "clear": "Limpar",
+      "searchLine": "Pesquisar linha..."
     },
     "kpis": {
       "totalVehicles": "Total de Veículos",
@@ -51,6 +52,11 @@
         "normal": "Normal",
         "low": "Baixa"
       }
+    },
+    "topLines": {
+      "title": "Top Linhas",
+      "events": "eventos",
+      "noData": "Nenhum dado disponível"
     }
   },
   "alerts": {
@@ -58,5 +64,64 @@
     "panic": "Pânico",
     "emergency": "Emergência",
     "maintenance": "Manutenção"
+  },
+  "can": {
+    "dashboard": {
+      "title": "Dashboard CAN (Volvo)",
+      "selectVehicle": "Selecionar Veículo"
+    },
+    "status": {
+      "engineOn": "Motor Ligado",
+      "checkEngine": "Check Engine",
+      "caution": "Precaução",
+      "alert": "Alerta",
+      "on": "LIGADO",
+      "off": "DESLIGADO",
+      "active": "ATIVO"
+    },
+    "gauges": {
+      "rpm": "Rotações por Minuto",
+      "torque": "Torque",
+      "currentTorque": "Torque Atual",
+      "requestedTorque": "Torque Solicitado",
+      "match": "Correspondência"
+    },
+    "temperature": {
+      "title": "Temperaturas do Motor",
+      "water": "Água",
+      "oil": "Óleo",
+      "delta": "Delta (Óleo - Água)",
+      "normal": "Normal",
+      "attention": "Atenção",
+      "critical": "Crítico"
+    },
+    "comfort": {
+      "title": "Conforto Térmico",
+      "interior": "Temperatura Interior",
+      "exterior": "Temperatura Exterior",
+      "delta": "Delta Térmico",
+      "ideal": "Ideal",
+      "hot": "Quente",
+      "cold": "Frio",
+      "acceptable": "Aceitável"
+    },
+    "trip": {
+      "title": "KPIs da Viagem",
+      "engineTime": "Tempo Motor Ligado",
+      "overheating": "Sobreaquecimento",
+      "avgRPM": "RPM Médio",
+      "maxRPM": "RPM Máximo",
+      "torqueMismatch": "Divergências Torque",
+      "idleTime": "Marcha Lenta",
+      "aggressive": "Eventos Agressivos",
+      "harshBraking": "Frenagens Bruscas"
+    },
+    "critical": {
+      "title": "Veículos Críticos",
+      "vehicles": "veículos",
+      "line": "Linha",
+      "issues": "problemas",
+      "noIssues": "Nenhum veículo com problemas críticos no momento."
+    }
   }
 }

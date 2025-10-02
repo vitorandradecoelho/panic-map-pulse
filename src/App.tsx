@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { AuthProvider, useAuthContext } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import VehicleDashboardPage from "./pages/VehicleDashboardPage";
+import VehicleCANDashboard from "./pages/VehicleCANDashboard";
 import AlertsMonitoring from "./pages/AlertsMonitoring";
 import NotFound from "./pages/NotFound";
 import LoadingScreen from "./components/LoadingScreen";
@@ -72,6 +73,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/dashboardPanico" element={<VehicleDashboardPage />} />
+        <Route path="/dashboardCAN" element={<VehicleCANDashboard />} />
         <Route path="/alertas" element={<AlertsMonitoring />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

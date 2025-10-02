@@ -23,7 +23,8 @@
       "allLines": "All lines",
       "allCompanies": "All companies",
       "selectPeriod": "Select period",
-      "clear": "Clear"
+      "clear": "Clear",
+      "searchLine": "Search line..."
     },
     "kpis": {
       "totalVehicles": "Total Vehicles",
@@ -51,6 +52,11 @@
         "normal": "Normal",
         "low": "Low"
       }
+    },
+    "topLines": {
+      "title": "Top Lines",
+      "events": "events",
+      "noData": "No data available"
     }
   },
   "alerts": {
@@ -58,5 +64,64 @@
     "panic": "Panic",
     "emergency": "Emergency",
     "maintenance": "Maintenance"
+  },
+  "can": {
+    "dashboard": {
+      "title": "CAN Dashboard (Volvo)",
+      "selectVehicle": "Select Vehicle"
+    },
+    "status": {
+      "engineOn": "Engine On",
+      "checkEngine": "Check Engine",
+      "caution": "Caution",
+      "alert": "Alert",
+      "on": "ON",
+      "off": "OFF",
+      "active": "ACTIVE"
+    },
+    "gauges": {
+      "rpm": "Revolutions Per Minute",
+      "torque": "Torque",
+      "currentTorque": "Current Torque",
+      "requestedTorque": "Requested Torque",
+      "match": "Match"
+    },
+    "temperature": {
+      "title": "Engine Temperatures",
+      "water": "Water",
+      "oil": "Oil",
+      "delta": "Delta (Oil - Water)",
+      "normal": "Normal",
+      "attention": "Attention",
+      "critical": "Critical"
+    },
+    "comfort": {
+      "title": "Thermal Comfort",
+      "interior": "Interior Temperature",
+      "exterior": "Exterior Temperature",
+      "delta": "Thermal Delta",
+      "ideal": "Ideal",
+      "hot": "Hot",
+      "cold": "Cold",
+      "acceptable": "Acceptable"
+    },
+    "trip": {
+      "title": "Trip KPIs",
+      "engineTime": "Engine On Time",
+      "overheating": "Overheating",
+      "avgRPM": "Average RPM",
+      "maxRPM": "Max RPM",
+      "torqueMismatch": "Torque Mismatches",
+      "idleTime": "Idle Time",
+      "aggressive": "Aggressive Events",
+      "harshBraking": "Harsh Braking"
+    },
+    "critical": {
+      "title": "Critical Vehicles",
+      "vehicles": "vehicles",
+      "line": "Line",
+      "issues": "issues",
+      "noIssues": "No vehicles with critical issues at the moment."
+    }
   }
 }
