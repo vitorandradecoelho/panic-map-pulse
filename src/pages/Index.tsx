@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Truck, BarChart3, Gauge } from "lucide-react";
+import { Shield, Truck, BarChart3, Gauge, AlertTriangle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useEffect } from "react";
 
@@ -18,6 +18,7 @@ const Index = () => {
       const pageRoutes = {
         'dashboardPanico': '/dashboardPanico',
         'dashboardCAN': '/dashboardCAN',
+        'criticalMonitoring': '/critical-monitoring',
         'alertas': '/alertas'
       };
 
@@ -44,7 +45,7 @@ const Index = () => {
         </div>
 
         {/* Menu Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/dashboardPanico")}>
             <CardHeader className="text-center pb-4">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -75,6 +76,23 @@ const Index = () => {
               </p>
               <Button className="w-full" variant="secondary">
                 Acessar CAN
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105" onClick={() => navigate("/critical-monitoring")}>
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="h-8 w-8 text-warning" />
+              </div>
+              <CardTitle className="text-xl">Veículos Críticos</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Monitore veículos com alta incidência de alertas
+              </p>
+              <Button className="w-full" variant="outline">
+                Acessar Monitoramento
               </Button>
             </CardContent>
           </Card>

@@ -123,5 +123,53 @@
       "issues": "problemas",
       "noIssues": "No hay vehículos con problemas críticos en este momento."
     }
+  },
+  "critical": {
+    "monitoring": {
+      "title": "Vehículos Críticos",
+      "subtitle": "Monitoreo de vehículos con alta incidencia de alertas",
+      "filters": {
+        "period": "Período",
+        "line": "Línea",
+        "neighborhood": "Barrio",
+        "criticality": "Nivel de Criticidad",
+        "all": "Todos",
+        "allLines": "Todas las líneas",
+        "apply": "Filtrar"
+      },
+      "period": {
+        "7days": "Últimos 7 días",
+        "15days": "Últimos 15 días",
+        "30days": "Últimos 30 días"
+      },
+      "kpi": {
+        "criticalVehicles": "Vehículos Críticos",
+        "totalAlerts": "Total de Alertas",
+        "avgResponse": "Tiempo Promedio Respuesta",
+        "reincidence": "Reincidencia",
+        "vsPrevious": "vs semana anterior",
+        "improvement": "mejora",
+        "sameVehicle": "Mismo vehículo/conductor"
+      },
+      "ranking": {
+        "title": "Ranking de Vehículos Críticos"
+      },
+      "table": {
+        "prefix": "PREFIJO",
+        "line": "LÍNEA",
+        "driver": "CONDUCTOR",
+        "alerts": "ALERTAS (7D)",
+        "alertsCount": "alertas",
+        "lastAlert": "ÚLTIMA ALERTA",
+        "criticality": "CRITICIDAD",
+        "actions": "ACCIONES"
+      },
+      "criticality": {
+        "high": "Alto",
+        "medium": "Medio",
+        "low": "Bajo"
+      },
+      "noData": "No se encontraron vehículos críticos con los filtros aplicados"
+    }
   }
 }
