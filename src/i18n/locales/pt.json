@@ -70,6 +70,40 @@
       "title": "Dashboard CAN (Volvo)",
       "selectVehicle": "Selecionar Veículo"
     },
+    "analysis": {
+      "title": "Análise de Veículo - Alertas de Pânico",
+      "vehicleSelection": "Seleção de Veículo",
+      "vehiclePrefix": "Prefixo do Veículo",
+      "line": "Linha",
+      "driver": "Motorista",
+      "period": "Período",
+      "alertsToday": "Alertas Hoje",
+      "kmDriven": "Km Rodados",
+      "activeTime": "Tempo Ativo",
+      "currentStatus": "Status Atual",
+      "status": {
+        "inOperation": "Em Operação",
+        "idle": "Parado com Motor Ligado",
+        "stopped": "Desligado"
+      },
+      "rpmTimeline": "Linha Temporal - RPM",
+      "torqueTimeline": "Linha Temporal - Torque",
+      "temperatureTimeline": "Linha Temporal - Temperatura",
+      "panicAlerts": "Alertas de Pânico - Hoje",
+      "systemEvents": "Eventos do Sistema",
+      "noAlerts": "Nenhum alerta registrado",
+      "noEvents": "Nenhum evento registrado",
+      "severity": {
+        "high": "Alto",
+        "medium": "Médio",
+        "low": "Baixo"
+      },
+      "eventType": {
+        "operation_start": "Início",
+        "maintenance": "Manutenção",
+        "refuel": "Abastecimento"
+      }
+    },
     "status": {
       "engineOn": "Motor Ligado",
       "checkEngine": "Check Engine",

@@ -70,6 +70,40 @@
       "title": "Tablero CAN (Volvo)",
       "selectVehicle": "Seleccionar Vehículo"
     },
+    "analysis": {
+      "title": "Análisis de Vehículo - Alertas de Pánico",
+      "vehicleSelection": "Selección de Vehículo",
+      "vehiclePrefix": "Prefijo del Vehículo",
+      "line": "Línea",
+      "driver": "Chofer",
+      "period": "Período",
+      "alertsToday": "Alertas Hoy",
+      "kmDriven": "Km Recorridos",
+      "activeTime": "Tiempo Activo",
+      "currentStatus": "Estado Actual",
+      "status": {
+        "inOperation": "En Operación",
+        "idle": "Detenido con Motor Prendido",
+        "stopped": "Apagado"
+      },
+      "rpmTimeline": "Línea Temporal - RPM",
+      "torqueTimeline": "Línea Temporal - Torque",
+      "temperatureTimeline": "Línea Temporal - Temperatura",
+      "panicAlerts": "Alertas de Pánico - Hoy",
+      "systemEvents": "Eventos del Sistema",
+      "noAlerts": "No hay alertas registradas",
+      "noEvents": "No hay eventos registrados",
+      "severity": {
+        "high": "Alto",
+        "medium": "Medio",
+        "low": "Bajo"
+      },
+      "eventType": {
+        "operation_start": "Inicio",
+        "maintenance": "Mantenimiento",
+        "refuel": "Recarga"
+      }
+    },
     "status": {
       "engineOn": "Motor Encendido",
       "checkEngine": "Check Engine",
