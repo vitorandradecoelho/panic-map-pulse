@@ -7,6 +7,7 @@ import { AnalysisKPIs } from "@/components/can/analysis/AnalysisKPIs";
 import { TimeSeriesChart } from "@/components/can/analysis/TimeSeriesChart";
 import { AlertsPanel } from "@/components/can/analysis/AlertsPanel";
 import { SystemEventsPanel } from "@/components/can/analysis/SystemEventsPanel";
+import { ComfortPanel } from "@/components/can/analysis/ComfortPanel";
 
 const VehicleCANDashboard = () => {
   const { t } = useTranslation();
@@ -64,10 +65,11 @@ const VehicleCANDashboard = () => {
           />
         </div>
 
-        {/* Alerts and Events */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Alerts, Events and Comfort */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <AlertsPanel vehicle={selectedVehicle} />
           <SystemEventsPanel vehicle={selectedVehicle} />
+          <ComfortPanel vehicle={selectedVehicle} />
         </div>
       </main>
     </div>
