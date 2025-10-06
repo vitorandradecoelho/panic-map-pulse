@@ -156,6 +156,20 @@
       "line": "Line",
       "issues": "issues",
       "noIssues": "No vehicles with critical issues at the moment."
+    },
+    "fuel": {
+      "instantaneous": "Instantaneous Consumption",
+      "accumulated": "Accumulated Consumption",
+      "operationMode": "Operation Mode",
+      "efficiency": "Efficiency",
+      "idle": "Idle",
+      "cruise": "Cruise",
+      "highLoad": "High Load",
+      "consumption": "Consumption",
+      "consumptionVsRPM": "Consumption vs RPM",
+      "consumptionVsTorque": "Consumption vs Torque",
+      "torquePercent": "Torque (%)",
+      "last8h": "last 8h"
     }
   },
   "critical": {

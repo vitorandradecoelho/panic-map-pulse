@@ -7,6 +7,7 @@ import { AnalysisKPIs } from "@/components/can/analysis/AnalysisKPIs";
 import { TimeSeriesChart } from "@/components/can/analysis/TimeSeriesChart";
 import { SystemEventsPanel } from "@/components/can/analysis/SystemEventsPanel";
 import { ComfortPanel } from "@/components/can/analysis/ComfortPanel";
+import { FuelConsumptionPanel } from "@/components/can/analysis/FuelConsumptionPanel";
 
 const VehicleCANDashboard = () => {
   const { t } = useTranslation();
@@ -63,6 +64,9 @@ const VehicleCANDashboard = () => {
             color="hsl(var(--chart-3))"
           />
         </div>
+
+        {/* Fuel Consumption */}
+        <FuelConsumptionPanel vehicle={selectedVehicle} />
 
         {/* Events and Comfort */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

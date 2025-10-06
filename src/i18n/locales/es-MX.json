@@ -156,6 +156,20 @@
       "line": "Línea",
       "issues": "problemas",
       "noIssues": "No hay vehículos con problemas críticos en este momento."
+    },
+    "fuel": {
+      "instantaneous": "Consumo Instantáneo",
+      "accumulated": "Consumo Acumulado",
+      "operationMode": "Modo de Operación",
+      "efficiency": "Eficiencia",
+      "idle": "Ralentí",
+      "cruise": "Crucero",
+      "highLoad": "Alta Carga",
+      "consumption": "Consumo",
+      "consumptionVsRPM": "Consumo vs RPM",
+      "consumptionVsTorque": "Consumo vs Torque",
+      "torquePercent": "Torque (%)",
+      "last8h": "últimas 8h"
     }
   },
   "critical": {
