@@ -37,12 +37,12 @@ export const VehicleSelector = ({
             }}
           >
             <SelectTrigger id="vehicle-prefix">
-              <SelectValue>{selectedVehicle.prefixoVeiculo}</SelectValue>
+              <SelectValue>{selectedVehicle.serial}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {vehicles.map(vehicle => (
                 <SelectItem key={vehicle.serial} value={vehicle.serial}>
-                  {vehicle.prefixoVeiculo}
+                  {vehicle.serial}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -52,14 +52,14 @@ export const VehicleSelector = ({
         <div className="space-y-2">
           <Label>{t('can.analysis.line')}</Label>
           <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm">
-            {selectedVehicle.linha}
+            {selectedVehicle.linha || '-'}
           </div>
         </div>
 
         <div className="space-y-2">
           <Label>{t('can.analysis.driver')}</Label>
           <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm">
-            {selectedVehicle.motorista}
+            {selectedVehicle.motorista || '-'}
           </div>
         </div>
 

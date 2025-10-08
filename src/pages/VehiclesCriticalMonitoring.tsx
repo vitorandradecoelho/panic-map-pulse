@@ -223,9 +223,9 @@ const VehiclesCriticalMonitoring = () => {
               <TableBody>
                 {filteredVehicles.map((vehicle) => (
                   <TableRow key={vehicle.serial}>
-                    <TableCell className="font-medium">{vehicle.prefixoVeiculo}</TableCell>
-                    <TableCell>{t('can.critical.line')} {vehicle.linha}</TableCell>
-                    <TableCell>{vehicle.motorista}</TableCell>
+                    <TableCell className="font-medium">{vehicle.serial}</TableCell>
+                    <TableCell>{vehicle.linha ? `${t('can.critical.line')} ${vehicle.linha}` : '-'}</TableCell>
+                    <TableCell>{vehicle.motorista || '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{vehicle.alertCount} {t('critical.monitoring.table.alertsCount')}</Badge>
                     </TableCell>

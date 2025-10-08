@@ -54,9 +54,10 @@ export const CriticalVehiclesPanel = ({ vehicles }: CriticalVehiclesPanelProps) 
                   <div key={vehicle.serial} className="p-4 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-semibold">{vehicle.prefixoVeiculo}</h4>
+                        <h4 className="font-semibold">{vehicle.serial}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {t('can.critical.line')} {vehicle.linha} - {vehicle.motorista}
+                          {vehicle.linha && `${t('can.critical.line')} ${vehicle.linha}`}
+                          {vehicle.motorista && ` - ${vehicle.motorista}`}
                         </p>
                       </div>
                       <Badge variant="destructive">{issues.length} {t('can.critical.issues')}</Badge>
