@@ -28,22 +28,35 @@ export const TimeSeriesChart = ({
   const generateTimeSeriesData = () => {
     if (historicalData.length > 0) {
       // Usar dados reais da API
-      return historicalData
-        .map(record => ({
-          time: new Date(record.dataHoraEnvio).toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          value: record[dataKey] || 0,
-          timestamp: record.dataHoraEnvio
-        }))
+      console.log(`📊 Gerando gráfico para ${dataKey}, registros disponíveis:`, historicalData.length);
+      
+      const processedData = historicalData
+        .map(record => {
+          const value = record[dataKey];
+          // Log para debug
+          if (value === undefined || value === null) {
+            console.warn(`⚠️ Valor undefined/null para ${dataKey} no registro:`, record);
+          }
+          
+          return {
+            time: new Date(record.dataHoraEnvio).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            value: typeof value === 'number' ? value : 0,
+            timestamp: record.dataHoraEnvio
+          };
+        })
         .reverse(); // Inverter para mostrar do mais antigo ao mais recente
+      
+      console.log(`✅ Dados processados para ${dataKey}:`, processedData.slice(0, 3));
+      return processedData;
     }
     
     // Fallback: gerar dados mock se não houver dados históricos
     const points = timeRange === '1h' ? 12 : timeRange === '4h' ? 24 : 48;
     const interval = timeRange === '1h' ? 5 : timeRange === '4h' ? 10 : 10;
-    const baseValue = vehicle[dataKey];
+    const baseValue = vehicle[dataKey] || 0;
 
     return Array.from({ length: points }, (_, i) => {
       const variance = Math.random() * 0.3 - 0.15;
@@ -58,8 +71,11 @@ export const TimeSeriesChart = ({
   };
 
   const data = generateTimeSeriesData();
-  const maxValue = Math.max(...data.map(d => d.value));
-  const avgValue = Math.round(data.reduce((sum, d) => sum + d.value, 0) / data.length);
+  const validValues = data.map(d => d.value).filter(v => typeof v === 'number' && !isNaN(v));
+  const maxValue = validValues.length > 0 ? Math.max(...validValues) : 0;
+  const avgValue = validValues.length > 0 
+    ? Math.round(validValues.reduce((sum, v) => sum + v, 0) / validValues.length) 
+    : 0;
 
   return (
     <Card>
@@ -68,7 +84,7 @@ export const TimeSeriesChart = ({
           <div>
             <CardTitle className="text-base">{title}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Máximo: {maxValue}{unit} | Média: {avgValue}{unit}
+              Máximo: {maxValue.toFixed(1)}{unit} | Média: {avgValue.toFixed(1)}{unit}
             </p>
           </div>
           <div className="flex gap-2">
