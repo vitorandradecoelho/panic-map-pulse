@@ -5,7 +5,7 @@ import { CANVehicleData } from "@/data/canMockData";
 
 interface TimeSeriesChartProps {
   title: string;
-  dataKey: 'rpm' | 'torque' | 'temperature';
+  dataKey: 'rpm' | 'torqueAtual' | 'tempAguaMotor';
   vehicle: CANVehicleData;
   timeRange: '1h' | '4h' | '8h';
   onTimeRangeChange: (range: '1h' | '4h' | '8h') => void;
@@ -26,11 +26,7 @@ export const TimeSeriesChart = ({
     const points = timeRange === '1h' ? 12 : timeRange === '4h' ? 24 : 48;
     const interval = timeRange === '1h' ? 5 : timeRange === '4h' ? 10 : 10;
     
-    const baseValue = dataKey === 'rpm' 
-      ? vehicle.rpm 
-      : dataKey === 'torque' 
-      ? vehicle.torqueAtual 
-      : vehicle.tempAguaMotor;
+    const baseValue = vehicle[dataKey];
 
     return Array.from({ length: points }, (_, i) => {
       const variance = Math.random() * 0.3 - 0.15;

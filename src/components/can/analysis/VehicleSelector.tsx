@@ -26,7 +26,7 @@ export const VehicleSelector = ({
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">{t('can.analysis.vehicleSelection')}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vehicle-prefix">{t('can.analysis.vehiclePrefix')}</Label>
           <Select
@@ -49,19 +49,6 @@ export const VehicleSelector = ({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label>{t('can.analysis.line')}</Label>
-          <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm">
-            {selectedVehicle.linha || '-'}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t('can.analysis.driver')}</Label>
-          <div className="h-10 px-3 py-2 bg-muted rounded-md flex items-center text-sm">
-            {selectedVehicle.motorista || '-'}
-          </div>
-        </div>
 
         <div className="space-y-2">
           <Label htmlFor="period">{t('can.analysis.period')}</Label>

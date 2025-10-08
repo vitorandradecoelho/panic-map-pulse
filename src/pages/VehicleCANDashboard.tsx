@@ -46,7 +46,7 @@ const VehicleCANDashboard = () => {
 
           <TimeSeriesChart
             title={t('can.analysis.torqueTimeline')}
-            dataKey="torque"
+            dataKey="torqueAtual"
             vehicle={selectedVehicle}
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
@@ -56,7 +56,7 @@ const VehicleCANDashboard = () => {
 
           <TimeSeriesChart
             title={t('can.analysis.temperatureTimeline')}
-            dataKey="temperature"
+            dataKey="tempAguaMotor"
             vehicle={selectedVehicle}
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
