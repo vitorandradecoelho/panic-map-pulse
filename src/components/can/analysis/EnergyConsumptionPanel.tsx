@@ -39,6 +39,12 @@ export const EnergyConsumptionPanel = ({ vehicle }: EnergyConsumptionPanelProps)
   
   const energyRate = calculateEnergyRate(vehicle.rpm, vehicle.torqueAtual, vehicle.velocidade);
   
+  // Valores com fallback para propriedades que podem não existir
+  const consumoEnergia = vehicle.consumoEnergia ?? energyRate;
+  const eficienciaAtual = vehicle.eficienciaAtual ?? (consumoEnergia > 0 ? (1 / consumoEnergia) : 0);
+  const nivelBateria = vehicle.nivelBateria ?? vehicle.soc ?? 85;
+  const autonomia = vehicle.autonomia ?? Math.round(nivelBateria * 2.5);
+  
   // Determinar modo de operação
   const getOperationMode = (): { mode: string; variant: "default" | "outline" | "secondary" } => {
     if (vehicle.velocidade === 0 && vehicle.rpm === 0) {
@@ -102,7 +108,7 @@ export const EnergyConsumptionPanel = ({ vehicle }: EnergyConsumptionPanelProps)
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
-              {vehicle.consumoEnergia.toFixed(2)}
+              {consumoEnergia.toFixed(2)}
               <span className="text-sm font-normal text-muted-foreground ml-1">kWh/km</span>
             </div>
           </CardContent>
@@ -132,7 +138,7 @@ export const EnergyConsumptionPanel = ({ vehicle }: EnergyConsumptionPanelProps)
           <CardContent>
             <div className="space-y-2">
               <div className="text-2xl font-bold">
-                {vehicle.eficienciaAtual.toFixed(2)}
+                {eficienciaAtual.toFixed(2)}
                 <span className="text-sm font-normal text-muted-foreground ml-1">km/kWh</span>
               </div>
               <Progress value={systemEfficiency} className="h-2" />
@@ -150,11 +156,11 @@ export const EnergyConsumptionPanel = ({ vehicle }: EnergyConsumptionPanelProps)
           <CardContent>
             <div className="space-y-2">
               <div className="text-3xl font-bold text-chart-4">
-                {vehicle.nivelBateria.toFixed(0)}%
+                {nivelBateria.toFixed(0)}%
               </div>
-              <Progress value={vehicle.nivelBateria} className="h-2" />
+              <Progress value={nivelBateria} className="h-2" />
               <p className="text-xs text-muted-foreground">
-                {t('can.energy.range')}: {vehicle.autonomia} km
+                {t('can.energy.range')}: {autonomia} km
               </p>
             </div>
           </CardContent>
