@@ -157,16 +157,16 @@ const VehicleCANDashboard = () => {
               historicalData={vehicleData}
             />
 
-            <TimeSeriesChart
-              title={t('can.analysis.torqueTimeline')}
-              dataKey="torqueAtual"
-              vehicle={currentVehicle}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              unit="%"
-              color="hsl(var(--chart-2))"
-              historicalData={vehicleData}
-            />
+          <TimeSeriesChart
+            title={t('can.analysis.torqueTimeline')}
+            dataKey="torqueAtual"
+            vehicle={currentVehicle}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+            unit="%"
+            color="hsl(var(--info))"
+            historicalData={vehicleData}
+          />
 
             <TimeSeriesChart
               title={t('can.analysis.temperatureTimeline')}
@@ -175,7 +175,7 @@ const VehicleCANDashboard = () => {
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
               unit="°C"
-              color="hsl(var(--chart-3))"
+              color="hsl(var(--warning))"
               historicalData={vehicleData}
             />
           </div>
