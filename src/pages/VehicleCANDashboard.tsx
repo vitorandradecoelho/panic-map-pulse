@@ -70,18 +70,16 @@ const VehicleCANDashboard = () => {
     setError(null);
     
     try {
-      // Calcular período baseado no timeRange
-      const dataFim = new Date(selectedDate);
-      dataFim.setHours(23, 59, 59, 999);
-      
-      const dataInicio = new Date(selectedDate);
-      const hoursBack = timeRange === '1h' ? 1 : timeRange === '4h' ? 4 : 8;
-      dataInicio.setHours(dataInicio.getHours() - hoursBack);
+      // Formatar data para o padrão: <<data>>T06:00:00.000+0000
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}T06:00:00.000+0000`;
       
       const data = await fetchCANDataByDate({
         serial: selectedSerial,
-        dataInicio: dataInicio.toISOString(),
-        dataFim: dataFim.toISOString()
+        dataInicio: formattedDate,
+        dataFim: formattedDate
       });
       
       if (data && data.length > 0) {
