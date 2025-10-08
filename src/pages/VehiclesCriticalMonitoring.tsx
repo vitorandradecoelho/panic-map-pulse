@@ -30,7 +30,7 @@ const VehiclesCriticalMonitoring = () => {
       if (vehicle.tempInterior > 32) alertCount += 1;
       if (torqueDiff > 15) alertCount += 1;
       if (isIdle && vehicle.horas > 5) alertCount += 1; // Marcha lenta prolongada
-      if (vehicle.nivelCombustible < 20) alertCount += 2;
+      if (vehicle.nivelBateria < 20) alertCount += 2;
       if (vehicle.presionAceite < 150 && vehicle.rpm > 1000) alertCount += 3;
       
       if (alertCount >= 6) criticality = "high";

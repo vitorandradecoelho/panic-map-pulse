@@ -20,7 +20,7 @@ export const AnalysisKPIs = ({ vehicle }: AnalysisKPIsProps) => {
   if (vehicle.tempOleoMotor > 105) alertsCount++;
   if (vehicle.tempInterior > 32) alertsCount++;
   if (Math.abs(vehicle.torqueAtual - vehicle.torqueSolicitado) > 15) alertsCount++;
-  if (vehicle.nivelCombustible < 20) alertsCount++;
+  if (vehicle.nivelBateria < 20) alertsCount++;
 
   const kmRodados = Math.floor(vehicle.trip);
   const tempoAtivo = Math.floor(vehicle.horas);

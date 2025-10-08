@@ -157,20 +157,22 @@
       "issues": "problemas",
       "noIssues": "No hay vehículos con problemas críticos en este momento."
     },
-    "fuel": {
+    "energy": {
       "instantaneous": "Consumo Instantáneo",
-      "accumulated": "Consumo Acumulado",
+      "accumulated": "Energía Acumulada",
       "operationMode": "Modo de Operación",
-      "efficiency": "Eficiencia",
-      "idle": "Ralentí",
-      "cruise": "Crucero",
-      "highLoad": "Alta Carga",
+      "efficiency": "Eficiencia Energética",
+      "off": "Apagado",
+      "standby": "Standby",
+      "efficient": "Eficiente",
+      "highPower": "Alta Potencia",
       "consumption": "Consumo",
-      "consumptionVsRPM": "Consumo vs RPM",
+      "consumptionVsSpeed": "Consumo vs Velocidad",
       "consumptionVsTorque": "Consumo vs Torque",
+      "speedLabel": "Velocidad (km/h)",
       "torquePercent": "Torque (%)",
-      "last8h": "últimas 8h",
-      "level": "Nivel Combustible"
+      "batteryLevel": "Nivel de Batería",
+      "range": "Autonomía"
     }
   },
   "critical": {

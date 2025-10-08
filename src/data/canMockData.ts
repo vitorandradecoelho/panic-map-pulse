@@ -21,13 +21,15 @@ export interface CANVehicleData {
   kmTotal: number;
   trip: number;
   horas: number;
-  totalFuelUsado: number;
+  totalEnergiaUsada: number; // kWh total usado
   presionAceite: number;
   nivelRefrigerante: number;
-  consumo: number;
-  rendimientoActual: number;
-  promedio: number;
-  nivelCombustible: number;
+  consumoEnergia: number; // kWh/km consumo instantâneo
+  eficienciaAtual: number; // km/kWh
+  promedioEficiencia: number; // km/kWh médio
+  nivelBateria: number; // % da bateria
+  soc: number; // State of Charge %
+  autonomia: number; // km restantes estimados
   $oid?: {
     timestamp: number;
     date: string;
@@ -64,13 +66,15 @@ export const mockCANVehicles: CANVehicleData[] = [
     kmTotal: 118110.0,
     trip: 118109.0,
     horas: 36150.0,
-    totalFuelUsado: 103691.0,
+    totalEnergiaUsada: 25922.75, // kWh (103691L * 0.25 conversão aprox)
     presionAceite: 300.0,
     nivelRefrigerante: 100.0,
-    consumo: 35.0,
-    rendimientoActual: 1.0,
-    promedio: 2.0,
-    nivelCombustible: 71.0,
+    consumoEnergia: 1.2, // kWh/km
+    eficienciaAtual: 0.83, // km/kWh
+    promedioEficiencia: 0.9, // km/kWh
+    nivelBateria: 71.0, // %
+    soc: 71.0,
+    autonomia: 185, // km
     empresaId: 2040,
     prefixoVeiculo: "30557",
     linha: "810",
@@ -99,13 +103,15 @@ export const mockCANVehicles: CANVehicleData[] = [
     kmTotal: 118110.0,
     trip: 118110.0,
     horas: 36150.0,
-    totalFuelUsado: 103691.0,
+    totalEnergiaUsada: 25922.75,
     presionAceite: 128.0,
     nivelRefrigerante: 100.0,
-    consumo: 3.0,
-    rendimientoActual: 0.0,
-    promedio: 2.0,
-    nivelCombustible: 71.0,
+    consumoEnergia: 0.5, // kWh/km (baixo consumo em idle)
+    eficienciaAtual: 2.0, // km/kWh
+    promedioEficiencia: 0.9,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 185,
     empresaId: 2037,
     prefixoVeiculo: "35309",
     linha: "120",
@@ -134,13 +140,15 @@ export const mockCANVehicles: CANVehicleData[] = [
     kmTotal: 118110.0,
     trip: 118110.0,
     horas: 36150.0,
-    totalFuelUsado: 103691.0,
+    totalEnergiaUsada: 25922.75,
     presionAceite: 308.0,
     nivelRefrigerante: 100.0,
-    consumo: 23.0,
-    rendimientoActual: 1.0,
-    promedio: 2.0,
-    nivelCombustible: 71.0,
+    consumoEnergia: 1.0,
+    eficienciaAtual: 1.0,
+    promedioEficiencia: 0.9,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 185,
     empresaId: 2039,
     prefixoVeiculo: "12611",
     linha: "73",
@@ -169,13 +177,15 @@ export const mockCANVehicles: CANVehicleData[] = [
     kmTotal: 118110.0,
     trip: 118110.0,
     horas: 36150.0,
-    totalFuelUsado: 103691.0,
+    totalEnergiaUsada: 25922.75,
     presionAceite: 0.0,
     nivelRefrigerante: 100.0,
-    consumo: 0.0,
-    rendimientoActual: 0.0,
-    promedio: 2.0,
-    nivelCombustible: 71.0,
+    consumoEnergia: 0.0,
+    eficienciaAtual: 0.0,
+    promedioEficiencia: 0.9,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 185,
     empresaId: 2040,
     prefixoVeiculo: "30563",
     linha: "841",
@@ -204,13 +214,15 @@ export const mockCANVehicles: CANVehicleData[] = [
     kmTotal: 118110.0,
     trip: 118110.0,
     horas: 36150.0,
-    totalFuelUsado: 103691.0,
+    totalEnergiaUsada: 25922.75,
     presionAceite: 280.0,
     nivelRefrigerante: 100.0,
-    consumo: 28.0,
-    rendimientoActual: 1.5,
-    promedio: 2.0,
-    nivelCombustible: 71.0,
+    consumoEnergia: 1.1,
+    eficienciaAtual: 0.91,
+    promedioEficiencia: 0.9,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 185,
     empresaId: 2039,
     prefixoVeiculo: "12331",
     linha: "393",

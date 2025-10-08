@@ -27,7 +27,7 @@ export const CriticalVehiclesPanel = ({ vehicles }: CriticalVehiclesPanelProps) 
     if (vehicle.tempOleoMotor > 105) issues.push({ icon: Thermometer, label: `${t('can.temperature.oil')} ${vehicle.tempOleoMotor}°C`, color: 'text-danger' });
     if (vehicle.tempInterior > 32) issues.push({ icon: Thermometer, label: `${t('can.comfort.interior')} ${vehicle.tempInterior}°C`, color: 'text-warning' });
     if (torqueDiff > 15) issues.push({ icon: AlertTriangle, label: `Torque Mismatch: ${torqueDiff}%`, color: 'text-warning' });
-    if (vehicle.nivelCombustible < 20) issues.push({ icon: AlertTriangle, label: `${t('can.fuel.level')}: ${vehicle.nivelCombustible}%`, color: 'text-warning' });
+    if (vehicle.nivelBateria < 20) issues.push({ icon: AlertTriangle, label: `${t('can.energy.batteryLevel')}: ${vehicle.nivelBateria}%`, color: 'text-warning' });
     
     return issues;
   };
