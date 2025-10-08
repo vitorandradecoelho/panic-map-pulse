@@ -16,6 +16,8 @@ interface VehicleSelectorProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   currentVehicle?: CANVehicleData | null;
+  onConsultar: () => void;
+  isLoading: boolean;
 }
 
 export const VehicleSelector = ({ 
@@ -24,14 +26,16 @@ export const VehicleSelector = ({
   onSerialChange,
   selectedDate,
   onDateChange,
-  currentVehicle
+  currentVehicle,
+  onConsultar,
+  isLoading
 }: VehicleSelectorProps) => {
   const { t } = useTranslation();
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">{t('can.analysis.vehicleSelection')}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vehicle-serial">{t('can.analysis.vehicleSerial')}</Label>
           <Select
@@ -39,11 +43,7 @@ export const VehicleSelector = ({
             onValueChange={onSerialChange}
           >
             <SelectTrigger id="vehicle-serial">
-              <SelectValue>
-                {selectedSerial}
-                {currentVehicle?.linha && ` - ${t('can.critical.line')} ${currentVehicle.linha}`}
-                {currentVehicle?.motorista && ` - ${currentVehicle.motorista}`}
-              </SelectValue>
+              <SelectValue placeholder={t('can.analysis.selectVehicle')} />
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
               {availableSerials.map((serial) => (
@@ -77,6 +77,17 @@ export const VehicleSelector = ({
               />
             </PopoverContent>
           </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <Label>&nbsp;</Label>
+          <Button 
+            onClick={onConsultar} 
+            disabled={isLoading || !selectedSerial}
+            className="w-full"
+          >
+            {isLoading ? t('can.analysis.searching') : t('can.analysis.search')}
+          </Button>
         </div>
       </div>
     </Card>

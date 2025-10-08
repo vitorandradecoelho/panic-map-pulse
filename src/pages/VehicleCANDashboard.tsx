@@ -57,53 +57,55 @@ const VehicleCANDashboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Buscar dados da API
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!selectedSerial) return;
+  const fetchData = async () => {
+    if (!selectedSerial) {
+      toast({
+        title: t('can.analysis.selectVehicle'),
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Calcular período baseado no timeRange
+      const dataFim = new Date(selectedDate);
+      dataFim.setHours(23, 59, 59, 999);
       
-      setIsLoading(true);
-      setError(null);
+      const dataInicio = new Date(selectedDate);
+      const hoursBack = timeRange === '1h' ? 1 : timeRange === '4h' ? 4 : 8;
+      dataInicio.setHours(dataInicio.getHours() - hoursBack);
       
-      try {
-        // Calcular período baseado no timeRange
-        const dataFim = new Date(selectedDate);
-        dataFim.setHours(23, 59, 59, 999);
-        
-        const dataInicio = new Date(selectedDate);
-        const hoursBack = timeRange === '1h' ? 1 : timeRange === '4h' ? 4 : 8;
-        dataInicio.setHours(dataInicio.getHours() - hoursBack);
-        
-        const data = await fetchCANDataByDate({
-          serial: selectedSerial,
-          dataInicio: dataInicio.toISOString(),
-          dataFim: dataFim.toISOString()
-        });
-        
-        if (data && data.length > 0) {
-          setVehicleData(data);
-        } else {
-          setError(t('can.analysis.noData'));
-          toast({
-            title: t('can.analysis.noData'),
-            description: t('can.analysis.noDataDescription'),
-            variant: "destructive"
-          });
-        }
-      } catch (err) {
-        console.error("Erro ao buscar dados CAN:", err);
-        setError(t('can.analysis.error'));
+      const data = await fetchCANDataByDate({
+        serial: selectedSerial,
+        dataInicio: dataInicio.toISOString(),
+        dataFim: dataFim.toISOString()
+      });
+      
+      if (data && data.length > 0) {
+        setVehicleData(data);
+      } else {
+        setError(t('can.analysis.noData'));
         toast({
-          title: t('can.analysis.error'),
-          description: t('can.analysis.errorDescription'),
+          title: t('can.analysis.noData'),
+          description: t('can.analysis.noDataDescription'),
           variant: "destructive"
         });
-      } finally {
-        setIsLoading(false);
       }
-    };
-    
-    fetchData();
-  }, [selectedSerial, selectedDate, timeRange, t, toast]);
+    } catch (err) {
+      console.error("Erro ao buscar dados CAN:", err);
+      setError(t('can.analysis.error'));
+      toast({
+        title: t('can.analysis.error'),
+        description: t('can.analysis.errorDescription'),
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Pegar o último registro como veículo atual
   const currentVehicle = vehicleData.length > 0 ? vehicleData[vehicleData.length - 1] : null;
@@ -116,16 +118,6 @@ const VehicleCANDashboard = () => {
     return <ErrorScreen message={error} />;
   }
 
-  if (!currentVehicle) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header title={t('can.analysis.title')} />
-        <main className="container mx-auto p-6">
-          <p className="text-center text-muted-foreground">{t('can.analysis.selectVehicle')}</p>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,55 +132,65 @@ const VehicleCANDashboard = () => {
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           currentVehicle={currentVehicle}
+          onConsultar={fetchData}
+          isLoading={isLoading}
         />
+        
+        {!currentVehicle && !isLoading && (
+          <p className="text-center text-muted-foreground py-8">{t('can.analysis.clickToSearch')}</p>
+        )}
 
         {/* KPIs */}
-        <AnalysisKPIs vehicle={currentVehicle} />
+        {currentVehicle && <AnalysisKPIs vehicle={currentVehicle} />}
 
         {/* Time Series Charts */}
-        <div className="space-y-6">
-          <TimeSeriesChart
-            title={t('can.analysis.rpmTimeline')}
-            dataKey="rpm"
-            vehicle={currentVehicle}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
-            unit="RPM"
-            color="hsl(var(--primary))"
-            historicalData={vehicleData}
-          />
+        {currentVehicle && (
+          <div className="space-y-6">
+            <TimeSeriesChart
+              title={t('can.analysis.rpmTimeline')}
+              dataKey="rpm"
+              vehicle={currentVehicle}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+              unit="RPM"
+              color="hsl(var(--primary))"
+              historicalData={vehicleData}
+            />
 
-          <TimeSeriesChart
-            title={t('can.analysis.torqueTimeline')}
-            dataKey="torqueAtual"
-            vehicle={currentVehicle}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
-            unit="%"
-            color="hsl(var(--chart-2))"
-            historicalData={vehicleData}
-          />
+            <TimeSeriesChart
+              title={t('can.analysis.torqueTimeline')}
+              dataKey="torqueAtual"
+              vehicle={currentVehicle}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+              unit="%"
+              color="hsl(var(--chart-2))"
+              historicalData={vehicleData}
+            />
 
-          <TimeSeriesChart
-            title={t('can.analysis.temperatureTimeline')}
-            dataKey="tempAguaMotor"
-            vehicle={currentVehicle}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
-            unit="°C"
-            color="hsl(var(--chart-3))"
-            historicalData={vehicleData}
-          />
-        </div>
+            <TimeSeriesChart
+              title={t('can.analysis.temperatureTimeline')}
+              dataKey="tempAguaMotor"
+              vehicle={currentVehicle}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+              unit="°C"
+              color="hsl(var(--chart-3))"
+              historicalData={vehicleData}
+            />
+          </div>
+        )}
 
         {/* Energy Consumption */}
-        <EnergyConsumptionPanel vehicle={currentVehicle} />
+        {currentVehicle && <EnergyConsumptionPanel vehicle={currentVehicle} />}
 
         {/* Events and Comfort */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SystemEventsPanel vehicle={currentVehicle} />
-          <ComfortPanel vehicle={currentVehicle} />
-        </div>
+        {currentVehicle && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SystemEventsPanel vehicle={currentVehicle} />
+            <ComfortPanel vehicle={currentVehicle} />
+          </div>
+        )}
       </main>
     </div>
   );
