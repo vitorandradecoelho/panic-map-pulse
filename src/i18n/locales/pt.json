@@ -169,7 +169,8 @@
       "consumptionVsRPM": "Consumo vs RPM",
       "consumptionVsTorque": "Consumo vs Torque",
       "torquePercent": "Torque (%)",
-      "last8h": "últimas 8h"
+      "last8h": "últimas 8h",
+      "level": "Nível Combustível"
     }
   },
   "critical": {

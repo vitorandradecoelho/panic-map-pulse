@@ -11,10 +11,10 @@ interface ComfortPanelProps {
 export const ComfortPanel = ({ vehicle }: ComfortPanelProps) => {
   const { t } = useTranslation();
 
-  const delta = vehicle.temperaturaInterior - vehicle.temperaturaExterior;
+  const delta = vehicle.tempInterior - vehicle.tempExterior;
   
   const getComfortStatus = () => {
-    const temp = vehicle.temperaturaInterior;
+    const temp = vehicle.tempInterior;
     if (temp >= 20 && temp <= 25) return { label: t('can.comfort.ideal'), variant: 'default' as const };
     if (temp > 25 && temp <= 28) return { label: t('can.comfort.acceptable'), variant: 'secondary' as const };
     if (temp > 28) return { label: t('can.comfort.hot'), variant: 'destructive' as const };
@@ -42,7 +42,7 @@ export const ComfortPanel = ({ vehicle }: ComfortPanelProps) => {
               {t('can.comfort.interior')}
             </span>
           </div>
-          <span className="text-3xl font-bold">{vehicle.temperaturaInterior}°C</span>
+          <span className="text-3xl font-bold">{vehicle.tempInterior}°C</span>
         </div>
 
         {/* Exterior Temperature */}
@@ -55,7 +55,7 @@ export const ComfortPanel = ({ vehicle }: ComfortPanelProps) => {
               {t('can.comfort.exterior')}
             </span>
           </div>
-          <span className="text-3xl font-bold">{vehicle.temperaturaExterior}°C</span>
+          <span className="text-3xl font-bold">{vehicle.tempExterior}°C</span>
         </div>
 
         {/* Delta */}

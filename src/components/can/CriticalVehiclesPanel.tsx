@@ -13,22 +13,22 @@ export const CriticalVehiclesPanel = ({ vehicles }: CriticalVehiclesPanelProps) 
   const { t } = useTranslation();
 
   const criticalVehicles = vehicles.filter(v => 
-    v.checkEngine || 
-    v.luzPrecaucao || 
-    v.luzAlerta || 
-    v.temperaturaAgua > 100 || 
-    v.temperaturaOleo > 105 ||
-    v.temperaturaInterior > 32
+    v.tempAguaMotor > 100 || 
+    v.tempOleoMotor > 105 ||
+    v.tempInterior > 32 ||
+    Math.abs(v.torqueAtual - v.torqueSolicitado) > 15
   );
 
   const getIssues = (vehicle: CANVehicleData) => {
     const issues = [];
-    if (vehicle.checkEngine) issues.push({ icon: XCircle, label: t('can.status.checkEngine'), color: 'text-danger' });
-    if (vehicle.luzPrecaucao) issues.push({ icon: AlertTriangle, label: t('can.status.caution'), color: 'text-warning' });
-    if (vehicle.luzAlerta) issues.push({ icon: AlertTriangle, label: t('can.status.alert'), color: 'text-danger' });
-    if (vehicle.temperaturaAgua > 100) issues.push({ icon: Thermometer, label: `${t('can.temperature.water')} ${vehicle.temperaturaAgua}°C`, color: 'text-danger' });
-    if (vehicle.temperaturaOleo > 105) issues.push({ icon: Thermometer, label: `${t('can.temperature.oil')} ${vehicle.temperaturaOleo}°C`, color: 'text-danger' });
-    if (vehicle.temperaturaInterior > 32) issues.push({ icon: Thermometer, label: `${t('can.comfort.interior')} ${vehicle.temperaturaInterior}°C`, color: 'text-warning' });
+    const torqueDiff = Math.abs(vehicle.torqueAtual - vehicle.torqueSolicitado);
+    
+    if (vehicle.tempAguaMotor > 100) issues.push({ icon: Thermometer, label: `${t('can.temperature.water')} ${vehicle.tempAguaMotor}°C`, color: 'text-danger' });
+    if (vehicle.tempOleoMotor > 105) issues.push({ icon: Thermometer, label: `${t('can.temperature.oil')} ${vehicle.tempOleoMotor}°C`, color: 'text-danger' });
+    if (vehicle.tempInterior > 32) issues.push({ icon: Thermometer, label: `${t('can.comfort.interior')} ${vehicle.tempInterior}°C`, color: 'text-warning' });
+    if (torqueDiff > 15) issues.push({ icon: AlertTriangle, label: `Torque Mismatch: ${torqueDiff}%`, color: 'text-warning' });
+    if (vehicle.nivelCombustible < 20) issues.push({ icon: AlertTriangle, label: `${t('can.fuel.level')}: ${vehicle.nivelCombustible}%`, color: 'text-warning' });
+    
     return issues;
   };
 
@@ -51,7 +51,7 @@ export const CriticalVehiclesPanel = ({ vehicles }: CriticalVehiclesPanelProps) 
               {criticalVehicles.map(vehicle => {
                 const issues = getIssues(vehicle);
                 return (
-                  <div key={vehicle._id} className="p-4 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
+                  <div key={vehicle.serial} className="p-4 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-semibold">{vehicle.prefixoVeiculo}</h4>

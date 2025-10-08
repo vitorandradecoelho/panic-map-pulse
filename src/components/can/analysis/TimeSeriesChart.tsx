@@ -30,7 +30,7 @@ export const TimeSeriesChart = ({
       ? vehicle.rpm 
       : dataKey === 'torque' 
       ? vehicle.torqueAtual 
-      : vehicle.temperaturaAgua;
+      : vehicle.tempAguaMotor;
 
     return Array.from({ length: points }, (_, i) => {
       const variance = Math.random() * 0.3 - 0.15;

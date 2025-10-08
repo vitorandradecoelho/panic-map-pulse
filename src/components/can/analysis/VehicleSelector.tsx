@@ -30,9 +30,9 @@ export const VehicleSelector = ({
         <div className="space-y-2">
           <Label htmlFor="vehicle-prefix">{t('can.analysis.vehiclePrefix')}</Label>
           <Select
-            value={selectedVehicle._id}
+            value={selectedVehicle.serial}
             onValueChange={(id) => {
-              const vehicle = vehicles.find(v => v._id === id);
+              const vehicle = vehicles.find(v => v.serial === id);
               if (vehicle) onVehicleChange(vehicle);
             }}
           >
@@ -41,7 +41,7 @@ export const VehicleSelector = ({
             </SelectTrigger>
             <SelectContent>
               {vehicles.map(vehicle => (
-                <SelectItem key={vehicle._id} value={vehicle._id}>
+                <SelectItem key={vehicle.serial} value={vehicle.serial}>
                   {vehicle.prefixoVeiculo}
                 </SelectItem>
               ))}

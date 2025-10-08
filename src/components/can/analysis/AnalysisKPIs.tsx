@@ -11,26 +11,31 @@ interface AnalysisKPIsProps {
 export const AnalysisKPIs = ({ vehicle }: AnalysisKPIsProps) => {
   const { t } = useTranslation();
 
-  const alertsCount = [
-    vehicle.checkEngine,
-    vehicle.luzPrecaucao,
-    vehicle.luzAlerta,
-  ].filter(Boolean).length;
+  const motorLigado = vehicle.rpm > 0;
+  const emMovimento = vehicle.velocidade > 0;
+  
+  // Calcular alertas baseado nos novos campos
+  let alertsCount = 0;
+  if (vehicle.tempAguaMotor > 100) alertsCount++;
+  if (vehicle.tempOleoMotor > 105) alertsCount++;
+  if (vehicle.tempInterior > 32) alertsCount++;
+  if (Math.abs(vehicle.torqueAtual - vehicle.torqueSolicitado) > 15) alertsCount++;
+  if (vehicle.nivelCombustible < 20) alertsCount++;
 
-  const kmRodados = Math.floor(Math.random() * 200 + 150);
-  const tempoAtivo = Math.floor(vehicle.tempoMotorLigado / 60);
-  const minutos = vehicle.tempoMotorLigado % 60;
+  const kmRodados = Math.floor(vehicle.trip);
+  const tempoAtivo = Math.floor(vehicle.horas);
+  const minutos = Math.floor((vehicle.horas % 1) * 60);
 
   const getStatusColor = () => {
-    if (!vehicle.motorLigado) return "secondary";
-    if (vehicle.checkEngine || vehicle.luzAlerta) return "destructive";
-    if (vehicle.luzPrecaucao) return "outline";
+    if (!motorLigado) return "secondary";
+    if (vehicle.tempAguaMotor > 105 || vehicle.tempOleoMotor > 110) return "destructive";
+    if (vehicle.tempAguaMotor > 100 || vehicle.tempOleoMotor > 105) return "outline";
     return "default";
   };
 
   const getStatusText = () => {
-    if (!vehicle.motorLigado) return t('can.analysis.status.stopped');
-    if (vehicle.emMovimento) return t('can.analysis.status.inOperation');
+    if (!motorLigado) return t('can.analysis.status.stopped');
+    if (emMovimento) return t('can.analysis.status.inOperation');
     return t('can.analysis.status.idle');
   };
 

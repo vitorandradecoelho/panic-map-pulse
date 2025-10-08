@@ -22,14 +22,16 @@ const VehiclesCriticalMonitoring = () => {
       let alertCount = 0;
       let criticality: "high" | "medium" | "low" = "low";
       
-      if (vehicle.checkEngine) alertCount += 3;
-      if (vehicle.luzAlerta) alertCount += 3;
-      if (vehicle.luzPrecaucao) alertCount += 1;
-      if (vehicle.temperaturaAgua > 100) alertCount += 2;
-      if (vehicle.temperaturaOleo > 105) alertCount += 2;
-      if (vehicle.temperaturaInterior > 32) alertCount += 1;
-      if (vehicle.eventosTorqueMismatch > 10) alertCount += 1;
-      if (vehicle.tempoMarchaLenta > 60) alertCount += 1;
+      const torqueDiff = Math.abs(vehicle.torqueAtual - vehicle.torqueSolicitado);
+      const isIdle = vehicle.rpm > 0 && vehicle.rpm < 900 && vehicle.velocidade === 0;
+      
+      if (vehicle.tempAguaMotor > 100) alertCount += 2;
+      if (vehicle.tempOleoMotor > 105) alertCount += 2;
+      if (vehicle.tempInterior > 32) alertCount += 1;
+      if (torqueDiff > 15) alertCount += 1;
+      if (isIdle && vehicle.horas > 5) alertCount += 1; // Marcha lenta prolongada
+      if (vehicle.nivelCombustible < 20) alertCount += 2;
+      if (vehicle.presionAceite < 150 && vehicle.rpm > 1000) alertCount += 3;
       
       if (alertCount >= 6) criticality = "high";
       else if (alertCount >= 3) criticality = "medium";
@@ -220,7 +222,7 @@ const VehiclesCriticalMonitoring = () => {
               </TableHeader>
               <TableBody>
                 {filteredVehicles.map((vehicle) => (
-                  <TableRow key={vehicle._id}>
+                  <TableRow key={vehicle.serial}>
                     <TableCell className="font-medium">{vehicle.prefixoVeiculo}</TableCell>
                     <TableCell>{t('can.critical.line')} {vehicle.linha}</TableCell>
                     <TableCell>{vehicle.motorista}</TableCell>
