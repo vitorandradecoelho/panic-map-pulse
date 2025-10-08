@@ -235,9 +235,9 @@ export const EnergyConsumptionPanel = ({ vehicle }: EnergyConsumptionPanelProps)
                 <Line 
                   type="monotone" 
                   dataKey="consumption" 
-                  stroke="hsl(var(--chart-2))" 
+                  stroke="hsl(var(--info))" 
                   strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--chart-2))' }}
+                  dot={{ fill: 'hsl(var(--info))' }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
