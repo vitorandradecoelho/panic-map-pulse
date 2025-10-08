@@ -27,10 +27,20 @@ export const TimeSeriesChart = ({
   // Use real historical data if available, otherwise generate mock data
   const generateTimeSeriesData = () => {
     if (historicalData.length > 0) {
-      // Usar dados reais da API
-      console.log(`📊 Gerando gráfico para ${dataKey}, registros disponíveis:`, historicalData.length);
+      // Calcular o tempo de corte baseado no timeRange
+      const now = Date.now();
+      const timeRangeMs = timeRange === '1h' ? 3600000 : timeRange === '4h' ? 14400000 : 28800000; // 1h, 4h ou 8h em ms
+      const cutoffTime = now - timeRangeMs;
       
+      console.log(`📊 Gerando gráfico para ${dataKey}, registros disponíveis:`, historicalData.length);
+      console.log(`⏰ Filtrando dados dos últimos ${timeRange}`);
+      
+      // Filtrar dados baseado no timeRange e processar
       const processedData = historicalData
+        .filter(record => {
+          const recordTime = new Date(record.dataHoraEnvio).getTime();
+          return recordTime >= cutoffTime;
+        })
         .map(record => {
           const value = record[dataKey];
           // Log para debug
@@ -49,7 +59,7 @@ export const TimeSeriesChart = ({
         })
         .reverse(); // Inverter para mostrar do mais antigo ao mais recente
       
-      console.log(`✅ Dados processados para ${dataKey}:`, processedData.slice(0, 3));
+      console.log(`✅ Dados filtrados para ${dataKey} (${timeRange}):`, processedData.length, 'registros');
       return processedData;
     }
     
