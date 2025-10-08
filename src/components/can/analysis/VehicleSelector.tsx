@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CANVehicleData } from "@/data/canMockData";
+import { cn } from "@/lib/utils";
 
 interface VehicleSelectorProps {
   availableSerials: string[];
@@ -31,6 +33,7 @@ export const VehicleSelector = ({
   isLoading
 }: VehicleSelectorProps) => {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
 
   return (
     <Card className="p-6">
@@ -38,21 +41,47 @@ export const VehicleSelector = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vehicle-serial">{t('can.analysis.vehicleSerial')}</Label>
-          <Select
-            value={selectedSerial}
-            onValueChange={onSerialChange}
-          >
-            <SelectTrigger id="vehicle-serial">
-              <SelectValue placeholder={t('can.analysis.selectVehicle')} />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px]">
-              {availableSerials.map((serial) => (
-                <SelectItem key={serial} value={serial}>
-                  {serial}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
+              >
+                {selectedSerial || t('can.analysis.selectVehicle')}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput placeholder={t('can.analysis.searchVehicle')} />
+                <CommandList>
+                  <CommandEmpty>{t('can.analysis.noVehicleFound')}</CommandEmpty>
+                  <CommandGroup>
+                    {availableSerials.map((serial) => (
+                      <CommandItem
+                        key={serial}
+                        value={serial}
+                        onSelect={(currentValue) => {
+                          onSerialChange(currentValue === selectedSerial ? "" : currentValue);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedSerial === serial ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {serial}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="space-y-2">

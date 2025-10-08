@@ -86,6 +86,8 @@
       "search": "Consultar",
       "searching": "Consultando...",
       "clickToSearch": "Seleccione un vehículo y haga clic en Consultar para ver los datos",
+      "searchVehicle": "Buscar vehículo...",
+      "noVehicleFound": "No se encontró ningún vehículo",
       "alertsToday": "Alertas Hoy",
       "kmDriven": "Km Recorridos",
       "activeTime": "Tiempo Activo",

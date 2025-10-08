@@ -86,6 +86,8 @@
       "search": "Search",
       "searching": "Searching...",
       "clickToSearch": "Select a vehicle and click Search to view the data",
+      "searchVehicle": "Search vehicle...",
+      "noVehicleFound": "No vehicle found",
       "alertsToday": "Alerts Today",
       "kmDriven": "Km Driven",
       "activeTime": "Active Time",
