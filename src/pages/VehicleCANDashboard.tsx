@@ -70,13 +70,20 @@ const VehicleCANDashboard = () => {
     setError(null);
     
     try {
-      // Formatar datas para o padrão ISO: YYYY-MM-DDT02:59:59.999Z
+      // Formatar datas: início = data selecionada, fim = data + 1 dia
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
       
       const dataInicio = `${year}-${month}-${day}T02:59:59.999Z`;
-      const dataFim = `${year}-${month}-${day}T02:59:59.999Z`;
+      
+      // DataFim = data selecionada + 1 dia
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const yearFim = nextDay.getFullYear();
+      const monthFim = String(nextDay.getMonth() + 1).padStart(2, '0');
+      const dayFim = String(nextDay.getDate()).padStart(2, '0');
+      const dataFim = `${yearFim}-${monthFim}-${dayFim}T02:59:59.999Z`;
       
       const data = await fetchCANDataByDate({
         serial: selectedSerial,
