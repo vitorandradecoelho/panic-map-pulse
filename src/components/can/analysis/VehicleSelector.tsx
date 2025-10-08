@@ -1,25 +1,30 @@
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CANVehicleData } from "@/data/canMockData";
-import { format } from "date-fns";
 
 interface VehicleSelectorProps {
-  vehicles: CANVehicleData[];
-  selectedVehicle: CANVehicleData;
-  onVehicleChange: (vehicle: CANVehicleData) => void;
+  availableSerials: string[];
+  selectedSerial: string;
+  onSerialChange: (serial: string) => void;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+  currentVehicle?: CANVehicleData | null;
 }
 
-export const VehicleSelector = ({
-  vehicles,
-  selectedVehicle,
-  onVehicleChange,
+export const VehicleSelector = ({ 
+  availableSerials,
+  selectedSerial, 
+  onSerialChange,
   selectedDate,
   onDateChange,
+  currentVehicle
 }: VehicleSelectorProps) => {
   const { t } = useTranslation();
 
@@ -28,36 +33,50 @@ export const VehicleSelector = ({
       <h3 className="text-lg font-semibold mb-4">{t('can.analysis.vehicleSelection')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="vehicle-prefix">{t('can.analysis.vehiclePrefix')}</Label>
+          <Label htmlFor="vehicle-serial">{t('can.analysis.vehicleSerial')}</Label>
           <Select
-            value={selectedVehicle.serial}
-            onValueChange={(id) => {
-              const vehicle = vehicles.find(v => v.serial === id);
-              if (vehicle) onVehicleChange(vehicle);
-            }}
+            value={selectedSerial}
+            onValueChange={onSerialChange}
           >
-            <SelectTrigger id="vehicle-prefix">
-              <SelectValue>{selectedVehicle.serial}</SelectValue>
+            <SelectTrigger id="vehicle-serial">
+              <SelectValue>
+                {selectedSerial}
+                {currentVehicle?.linha && ` - ${t('can.critical.line')} ${currentVehicle.linha}`}
+                {currentVehicle?.motorista && ` - ${currentVehicle.motorista}`}
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent>
-              {vehicles.map(vehicle => (
-                <SelectItem key={vehicle.serial} value={vehicle.serial}>
-                  {vehicle.serial}
+            <SelectContent className="max-h-[300px]">
+              {availableSerials.map((serial) => (
+                <SelectItem key={serial} value={serial}>
+                  {serial}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-
         <div className="space-y-2">
           <Label htmlFor="period">{t('can.analysis.period')}</Label>
-          <Input
-            id="period"
-            type="date"
-            value={format(selectedDate, 'yyyy-MM-dd')}
-            onChange={(e) => onDateChange(new Date(e.target.value))}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="period"
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(selectedDate, "PPP")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && onDateChange(date)}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </Card>

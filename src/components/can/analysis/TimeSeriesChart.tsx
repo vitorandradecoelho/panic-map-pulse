@@ -11,38 +11,53 @@ interface TimeSeriesChartProps {
   onTimeRangeChange: (range: '1h' | '4h' | '8h') => void;
   unit: string;
   color: string;
+  historicalData?: CANVehicleData[];
 }
 
-export const TimeSeriesChart = ({
-  title,
-  dataKey,
-  vehicle,
-  timeRange,
+export const TimeSeriesChart = ({ 
+  title, 
+  dataKey, 
+  vehicle, 
+  timeRange, 
   onTimeRangeChange,
   unit,
   color,
+  historicalData = []
 }: TimeSeriesChartProps) => {
-  const generateMockData = () => {
+  // Use real historical data if available, otherwise generate mock data
+  const generateTimeSeriesData = () => {
+    if (historicalData.length > 0) {
+      // Usar dados reais da API
+      return historicalData
+        .map(record => ({
+          time: new Date(record.dataHoraEnvio).toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          value: record[dataKey] || 0,
+          timestamp: record.dataHoraEnvio
+        }))
+        .reverse(); // Inverter para mostrar do mais antigo ao mais recente
+    }
+    
+    // Fallback: gerar dados mock se não houver dados históricos
     const points = timeRange === '1h' ? 12 : timeRange === '4h' ? 24 : 48;
     const interval = timeRange === '1h' ? 5 : timeRange === '4h' ? 10 : 10;
-    
     const baseValue = vehicle[dataKey];
 
     return Array.from({ length: points }, (_, i) => {
       const variance = Math.random() * 0.3 - 0.15;
-      const value = Math.max(0, baseValue * (1 + variance));
-      
-      const now = new Date();
-      now.setMinutes(now.getMinutes() - (points - i) * interval);
+      const minutesAgo = (points - i - 1) * interval;
       
       return {
-        time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
-        value: Math.round(value),
+        time: `${Math.floor(minutesAgo / 60)}h${minutesAgo % 60}m`,
+        value: Math.max(0, baseValue * (1 + variance)),
+        timestamp: new Date(Date.now() - minutesAgo * 60 * 1000).toISOString()
       };
     });
   };
 
-  const data = generateMockData();
+  const data = generateTimeSeriesData();
   const maxValue = Math.max(...data.map(d => d.value));
   const avgValue = Math.round(data.reduce((sum, d) => sum + d.value, 0) / data.length);
 
