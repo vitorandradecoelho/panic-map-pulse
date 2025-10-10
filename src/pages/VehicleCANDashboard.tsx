@@ -12,6 +12,8 @@ import { EnergyConsumptionPanel } from "@/components/can/analysis/EnergyConsumpt
 import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
 
 // Lista de seriais disponíveis
 const VEHICLE_SERIALS = [
@@ -45,6 +47,109 @@ const VEHICLE_SERIALS = [
   "00B800676A", "00B8006770", "00B8006786", "00B80067F7", "00B8006802"
 ];
 
+// Mock data
+const MOCK_CAN_DATA: CANVehicleData[] = [
+  {
+    serial: "00B800420A",
+    status: null,
+    mensagem: null,
+    dataHoraEnvio: "2025-10-08T06:03:02Z",
+    canParse: "ADennis",
+    posicaoAcelerador: 82,
+    switchAcelerador: "ON",
+    rpm: 1319,
+    torqueAtual: 61,
+    torqueSolicitado: 83,
+    velocidade: 47,
+    tempAguaMotor: 97.0,
+    tempOleoMotor: 1775.0,
+    tempInterior: 22.0,
+    tempExterior: 1775.0,
+    aireLinea: 968.0,
+    tanque1: 976.0,
+    tanque2: 976.0,
+    compresor: "ON",
+    kmTotal: 118110.0,
+    trip: 118109.0,
+    horas: 36150.0,
+    totalEnergiaUsada: 103691.0,
+    presionAceite: 300.0,
+    nivelRefrigerante: 100.0,
+    consumoEnergia: 35.0,
+    eficienciaAtual: 1.0,
+    promedioEficiencia: 2.0,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 100.0
+  },
+  {
+    serial: "00B800420A",
+    status: null,
+    mensagem: null,
+    dataHoraEnvio: "2025-10-08T06:04:03Z",
+    canParse: "ADennis",
+    posicaoAcelerador: 0,
+    switchAcelerador: "OFF",
+    rpm: 700,
+    torqueAtual: 13,
+    torqueSolicitado: 0,
+    velocidade: 0,
+    tempAguaMotor: 95.0,
+    tempOleoMotor: 1775.0,
+    tempInterior: 22.0,
+    tempExterior: 1775.0,
+    aireLinea: 984.0,
+    tanque1: 992.0,
+    tanque2: 984.0,
+    compresor: "ON",
+    kmTotal: 118110.0,
+    trip: 118110.0,
+    horas: 36150.0,
+    totalEnergiaUsada: 103691.0,
+    presionAceite: 128.0,
+    nivelRefrigerante: 100.0,
+    consumoEnergia: 3.0,
+    eficienciaAtual: 0.0,
+    promedioEficiencia: 2.0,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 100.0
+  },
+  {
+    serial: "00B800420A",
+    status: null,
+    mensagem: null,
+    dataHoraEnvio: "2025-10-08T06:05:03Z",
+    canParse: "ADennis",
+    posicaoAcelerador: 48,
+    switchAcelerador: "ON",
+    rpm: 1416,
+    torqueAtual: 39,
+    torqueSolicitado: 40,
+    velocidade: 31,
+    tempAguaMotor: 95.0,
+    tempOleoMotor: 1775.0,
+    tempInterior: 22.0,
+    tempExterior: 1775.0,
+    aireLinea: 944.0,
+    tanque1: 960.0,
+    tanque2: 944.0,
+    compresor: "ON",
+    kmTotal: 118110.0,
+    trip: 118110.0,
+    horas: 36150.0,
+    totalEnergiaUsada: 103691.0,
+    presionAceite: 308.0,
+    nivelRefrigerante: 100.0,
+    consumoEnergia: 23.0,
+    eficienciaAtual: 1.0,
+    promedioEficiencia: 2.0,
+    nivelBateria: 71.0,
+    soc: 71.0,
+    autonomia: 100.0
+  }
+];
+
 const VehicleCANDashboard = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -55,8 +160,9 @@ const VehicleCANDashboard = () => {
   const [vehicleData, setVehicleData] = useState<CANVehicleData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useMockData, setUseMockData] = useState(false);
 
-  // Buscar dados da API
+  // Buscar dados da API ou usar mock
   const fetchData = async () => {
     if (!selectedSerial) {
       toast({
@@ -70,36 +176,46 @@ const VehicleCANDashboard = () => {
     setError(null);
     
     try {
-      // Formatar datas: início = data selecionada, fim = data + 1 dia
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      
-      const dataInicio = `${year}-${month}-${day}T02:59:59.999Z`;
-      
-      // DataFim = data selecionada + 1 dia
-      const nextDay = new Date(selectedDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const yearFim = nextDay.getFullYear();
-      const monthFim = String(nextDay.getMonth() + 1).padStart(2, '0');
-      const dayFim = String(nextDay.getDate()).padStart(2, '0');
-      const dataFim = `${yearFim}-${monthFim}-${dayFim}T02:59:59.999Z`;
-      
-      const data = await fetchCANDataByDate({
-        serial: selectedSerial,
-        dataInicio,
-        dataFim
-      });
-      
-      if (data && data.length > 0) {
-        setVehicleData(data);
-      } else {
-        setError(t('can.analysis.noData'));
+      if (useMockData) {
+        // Usar dados mock
+        console.log("🔧 Usando dados MOCK");
+        setVehicleData(MOCK_CAN_DATA);
         toast({
-          title: t('can.analysis.noData'),
-          description: t('can.analysis.noDataDescription'),
-          variant: "destructive"
+          title: "Mock Data Ativado",
+          description: "Usando dados de exemplo",
         });
+      } else {
+        // Formatar datas: início = data selecionada, fim = data + 1 dia
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        
+        const dataInicio = `${year}-${month}-${day}T02:59:59.999Z`;
+        
+        // DataFim = data selecionada + 1 dia
+        const nextDay = new Date(selectedDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const yearFim = nextDay.getFullYear();
+        const monthFim = String(nextDay.getMonth() + 1).padStart(2, '0');
+        const dayFim = String(nextDay.getDate()).padStart(2, '0');
+        const dataFim = `${yearFim}-${monthFim}-${dayFim}T02:59:59.999Z`;
+        
+        const data = await fetchCANDataByDate({
+          serial: selectedSerial,
+          dataInicio,
+          dataFim
+        });
+        
+        if (data && data.length > 0) {
+          setVehicleData(data);
+        } else {
+          setError(t('can.analysis.noData'));
+          toast({
+            title: t('can.analysis.noData'),
+            description: t('can.analysis.noDataDescription'),
+            variant: "destructive"
+          });
+        }
       }
     } catch (err) {
       console.error("Erro ao buscar dados CAN:", err);
@@ -131,6 +247,18 @@ const VehicleCANDashboard = () => {
       <Header title={t('can.analysis.title')} />
       
       <main className="container mx-auto p-6 space-y-6">
+        {/* Mock Data Toggle */}
+        <div className="flex justify-end">
+          <Button
+            variant={useMockData ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUseMockData(!useMockData)}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            {useMockData ? "Modo Mock Ativo" : "Ativar Mock Data"}
+          </Button>
+        </div>
+
         {/* Vehicle Selection */}
         <VehicleSelector
           availableSerials={VEHICLE_SERIALS}
