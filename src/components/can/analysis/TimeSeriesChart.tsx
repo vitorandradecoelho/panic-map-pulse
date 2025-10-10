@@ -27,10 +27,13 @@ export const TimeSeriesChart = ({
   // Use real historical data if available, otherwise generate mock data
   const generateTimeSeriesData = () => {
     if (historicalData.length > 0) {
-      // Calcular o tempo de corte baseado no timeRange
-      const now = Date.now();
+      // Calcular o tempo de corte baseado no último registro recebido (não no agora)
+      const latest = historicalData.reduce((max, r) => {
+        const ts = new Date(r.dataHoraEnvio).getTime();
+        return ts > max ? ts : max;
+      }, 0);
       const timeRangeMs = timeRange === '1h' ? 3600000 : timeRange === '4h' ? 14400000 : 28800000; // 1h, 4h ou 8h em ms
-      const cutoffTime = now - timeRangeMs;
+      const cutoffTime = (latest || Date.now()) - timeRangeMs;
       
       console.log(`📊 Gerando gráfico para ${dataKey}, registros disponíveis:`, historicalData.length);
       console.log(`⏰ Filtrando dados dos últimos ${timeRange}`);

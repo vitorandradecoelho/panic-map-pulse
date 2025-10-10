@@ -5,7 +5,7 @@ import { CANVehicleData } from "@/data/canMockData";
 import { fetchCANDataByDate } from "@/services/canDataApi";
 import { VehicleSelector } from "@/components/can/analysis/VehicleSelector";
 import { AnalysisKPIs } from "@/components/can/analysis/AnalysisKPIs";
-import { TimeSeriesChart } from "@/components/can/analysis/TimeSeriesChart";
+import { MultiTimeSeriesChart } from "@/components/can/analysis/MultiTimeSeriesChart";
 import { SystemEventsPanel } from "@/components/can/analysis/SystemEventsPanel";
 import { ComfortPanel } from "@/components/can/analysis/ComfortPanel";
 import { EnergyConsumptionPanel } from "@/components/can/analysis/EnergyConsumptionPanel";
@@ -278,39 +278,20 @@ const VehicleCANDashboard = () => {
         {/* KPIs */}
         {currentVehicle && <AnalysisKPIs vehicle={currentVehicle} />}
 
-        {/* Time Series Charts */}
+        {/* Time Series Charts - Unificado */}
         {currentVehicle && (
           <div className="space-y-6">
-            <TimeSeriesChart
-              title={t('can.analysis.rpmTimeline')}
-              dataKey="rpm"
-              vehicle={currentVehicle}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              unit="RPM"
-              color="hsl(var(--primary))"
-              historicalData={vehicleData}
-            />
-
-          <TimeSeriesChart
-            title={t('can.analysis.torqueTimeline')}
-            dataKey="torqueAtual"
-            vehicle={currentVehicle}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
-            unit="%"
-            color="hsl(var(--info))"
-            historicalData={vehicleData}
-          />
-
-            <TimeSeriesChart
+            <MultiTimeSeriesChart
               title={t('can.analysis.temperatureTimeline')}
-              dataKey="tempAguaMotor"
+              series={[
+                { key: 'tempAguaMotor', name: 'Temperatura Água (°C)', color: 'hsl(var(--warning))', unit: '°C', yAxis: 'left' },
+                { key: 'velocidade', name: 'Velocidade (km/h)', color: 'hsl(var(--accent))', unit: 'km/h', yAxis: 'left' },
+                { key: 'torqueAtual', name: 'Torque (%)', color: 'hsl(var(--info))', unit: '%', yAxis: 'left' },
+                { key: 'rpm', name: 'RPM', color: 'hsl(var(--primary))', unit: 'RPM', yAxis: 'right' },
+              ]}
               vehicle={currentVehicle}
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
-              unit="°C"
-              color="hsl(var(--warning))"
               historicalData={vehicleData}
             />
           </div>
